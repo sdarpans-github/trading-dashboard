@@ -762,7 +762,7 @@ export default function Dashboard() {
                 {latestReview.summary}
               </div>
               <div style={{ marginTop: 10, fontSize: 10, color: T.muted,
-                fontFamily: "'DM Mono', monospace' }}>
+                fontFamily: "'DM Mono', monospace" }}>
                 {latestReview.title} · {latestReview.date}
               </div>
             </Card>
