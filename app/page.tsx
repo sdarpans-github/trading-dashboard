@@ -62,7 +62,6 @@ function fmt(n: number | null) {
   return `${n >= 0 ? "+" : ""}₹${Math.abs(n).toFixed(0)}`;
 }
 
-/* ── Badge ── */
 function Badge({ status }: { status: string }) {
   const c = SC[status] || { color: T.muted, bg: T.card, label: status };
   return (
@@ -74,7 +73,6 @@ function Badge({ status }: { status: string }) {
   );
 }
 
-/* ── KPI Card ── */
 function KPI({ label, value, sub, color, onClick, trend }: {
   label: string; value: string | number; sub?: string;
   color: string; onClick?: () => void; trend?: "up" | "down" | null;
@@ -123,7 +121,6 @@ function KPI({ label, value, sub, color, onClick, trend }: {
   );
 }
 
-/* ── Card ── */
 function Card({ children, style = {}, accent }: {
   children: React.ReactNode; style?: React.CSSProperties; accent?: string;
 }) {
@@ -137,7 +134,6 @@ function Card({ children, style = {}, accent }: {
   );
 }
 
-/* ── Section Label ── */
 function SLabel({ children, color }: { children: React.ReactNode; color?: string }) {
   return (
     <div style={{
@@ -152,7 +148,6 @@ function SLabel({ children, color }: { children: React.ReactNode; color?: string
   );
 }
 
-/* ── Spinner ── */
 function Spinner({ size = 14, color = T.accent }: { size?: number; color?: string }) {
   return (
     <span style={{
@@ -163,7 +158,6 @@ function Spinner({ size = 14, color = T.accent }: { size?: number; color?: strin
   );
 }
 
-/* ── Chart Tooltip ── */
 const CT = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   const v = payload[0].value;
@@ -178,7 +172,6 @@ const CT = ({ active, payload, label }: any) => {
   );
 };
 
-/* ── Trade Row ── */
 function TradeRow({ trade: t, updating, onAction, mobile }: {
   trade: Trade; updating: string | null;
   onAction: (id: string, action: string, name: string) => void;
@@ -203,8 +196,7 @@ function TradeRow({ trade: t, updating, onAction, mobile }: {
               <div style={{ fontSize: 13, fontWeight: 600, color: T.text,
                 fontFamily: "'DM Sans', sans-serif", marginBottom: 5,
                 lineHeight: 1.3 }}>{name}</div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center",
-                flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <Badge status={t.status} />
                 <span style={{ fontSize: 10, color: T.dim,
                   fontFamily: "'DM Mono', monospace" }}>{date}</span>
@@ -245,8 +237,7 @@ function TradeRow({ trade: t, updating, onAction, mobile }: {
           )}
         </div>
         {expanded && t.notes && (
-          <div style={{ padding: "0 16px 14px",
-            borderTop: `1px solid ${T.border}`, paddingTop: 10 }}>
+          <div style={{ padding: "0 16px 14px", borderTop: `1px solid ${T.border}`, paddingTop: 10 }}>
             <div style={{ fontSize: 11, color: T.muted, lineHeight: 1.6,
               fontFamily: "'DM Sans', sans-serif" }}>{t.notes}</div>
           </div>
@@ -271,8 +262,7 @@ function TradeRow({ trade: t, updating, onAction, mobile }: {
       >
         <div>
           <div style={{ fontSize: 13, fontWeight: 600, color: T.text,
-            fontFamily: "'DM Sans', sans-serif", display: "flex",
-            alignItems: "center", gap: 6 }}>
+            fontFamily: "'DM Sans', sans-serif", display: "flex", alignItems: "center", gap: 6 }}>
             {name}
             {t.notes && <span style={{ fontSize: 9, color: T.dim }}>▾</span>}
           </div>
@@ -283,22 +273,20 @@ function TradeRow({ trade: t, updating, onAction, mobile }: {
         <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: T.muted }}>
           {t.entryPrice ? `₹${t.entryPrice}` : "—"}
         </div>
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 12,
-          color: `${T.red}99` }}>
+        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: `${T.red}99` }}>
           {t.stopLoss ? `₹${t.stopLoss}` : "—"}
         </div>
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 12,
-          color: `${T.green}99` }}>
+        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: `${T.green}99` }}>
           {t.target ? `₹${t.target}` : "—"}
         </div>
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 12,
-          color: T.dim }}>{t.quantity ?? "—"}</div>
+        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: T.dim }}>
+          {t.quantity ?? "—"}
+        </div>
         <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 14, fontWeight: 700,
           color: pnl == null ? T.dim : pnl >= 0 ? T.green : T.red }}>
           {pnl == null ? "—" : fmt(pnl)}
         </div>
-        <div style={{ display: "flex", gap: 6 }}
-          onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
           {actions.map(({ action, label, color }) => (
             <button key={action}
               onClick={() => onAction(t.id, action, name)}
@@ -327,7 +315,6 @@ function TradeRow({ trade: t, updating, onAction, mobile }: {
   );
 }
 
-/* ── Hypothesis Badge ── */
 function HBadge({ status }: { status: string }) {
   const s = status.toLowerCase();
   const color = s.includes("confirm") ? T.green
@@ -346,21 +333,18 @@ function HBadge({ status }: { status: string }) {
   );
 }
 
-/* ═══════════════════════════════════════
-   MAIN DASHBOARD
-═══════════════════════════════════════ */
 export default function Dashboard() {
-  const [trades, setTrades]       = useState<Trade[]>([]);
-  const [fw, setFw]               = useState<Framework | null>(null);
-  const [review, setReview]       = useState<Review | null>(null);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState<string | null>(null);
-  const [filter, setFilter]       = useState("ALL");
-  const [tab, setTab]             = useState("overview");
-  const [synced, setSynced]       = useState<Date | null>(null);
-  const [updating, setUpdating]   = useState<string | null>(null);
-  const [toast, setToast]         = useState<{ msg: string; ok: boolean } | null>(null);
-  const [mobile, setMobile]       = useState(false);
+  const [trades, setTrades]     = useState<Trade[]>([]);
+  const [fw, setFw]             = useState<Framework | null>(null);
+  const [review, setReview]     = useState<Review | null>(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [filter, setFilter]     = useState("ALL");
+  const [tab, setTab]           = useState("overview");
+  const [synced, setSynced]     = useState<Date | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [toast, setToast]       = useState<{ msg: string; ok: boolean } | null>(null);
+  const [mobile, setMobile]     = useState(false);
 
   useEffect(() => {
     const check = () => setMobile(window.innerWidth < 768);
@@ -403,7 +387,6 @@ export default function Dashboard() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  /* ── Derived Stats ── */
   const closed   = trades.filter(t => t.status === "⚫ CLOSED");
   const open     = trades.filter(t => ["🟡 PENDING","✅ APPROVED","🔵 EXECUTED"].includes(t.status));
   const wins     = closed.filter(t => (t.finalPnL ?? 0) > 0);
@@ -416,7 +399,6 @@ export default function Dashboard() {
   const best     = closed.length ? Math.max(...closed.map(t => t.finalPnL??0)) : 0;
   const worst    = closed.length ? Math.min(...closed.map(t => t.finalPnL??0)) : 0;
 
-  // Streak
   let streak = 0, streakType = "";
   for (const t of [...closed].reverse()) {
     const w = (t.finalPnL ?? 0) > 0;
@@ -425,7 +407,6 @@ export default function Dashboard() {
     else break;
   }
 
-  // Today
   const todayIST    = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
   const todayTrades = trades.filter(t =>
     (t.date?.split("T")[0] || t.createdTime?.split("T")[0]) === todayIST);
@@ -434,7 +415,6 @@ export default function Dashboard() {
   const todayOpen   = todayTrades.filter(t =>
     ["🟡 PENDING","✅ APPROVED","🔵 EXECUTED"].includes(t.status));
 
-  // Daily P&L chart
   const dailyMap = closed.reduce((acc: Record<string,number>, t) => {
     const d = t.date?.split("T")[0] || t.createdTime?.split("T")[0] || "?";
     acc[d] = (acc[d] || 0) + (t.finalPnL ?? 0);
@@ -448,7 +428,6 @@ export default function Dashboard() {
     date: d.date, pnl: (cum += d.pnl, Math.round(cum))
   }));
 
-  // Day of week performance
   const dowMap = closed.reduce((acc: Record<string,number>, t) => {
     const d = t.date?.split("T")[0] || t.createdTime?.split("T")[0];
     if (!d) return acc;
@@ -459,7 +438,6 @@ export default function Dashboard() {
   const dowData = ["Mon","Tue","Wed","Thu","Fri"]
     .map(day => ({ day, pnl: Math.round(dowMap[day] || 0) }));
 
-  // Stock performance
   const stockMap = closed.reduce((acc: Record<string,{pnl:number;count:number;wins:number}>, t) => {
     const s = t.stock || t.tradeName?.split(" ")[0] || "?";
     if (!acc[s]) acc[s] = { pnl: 0, count: 0, wins: 0 };
@@ -472,9 +450,7 @@ export default function Dashboard() {
       wr: Math.round((d.wins / d.count) * 100) }))
     .sort((a,b) => b.pnl - a.pnl).slice(0, 8);
 
-  // Strategy
-  const stratMap = closed.reduce((acc: Record<string,
-    {pnl:number;wins:number;total:number}>, t) => {
+  const stratMap = closed.reduce((acc: Record<string,{pnl:number;wins:number;total:number}>, t) => {
     const n = t.tradeName || "";
     const s = n.includes("ORB") ? "ORB"
       : n.includes("Mean Reversion") ? "Mean Rev"
@@ -487,7 +463,6 @@ export default function Dashboard() {
     return acc;
   }, {});
 
-  // Strategy radar data
   const radarData = Object.entries(stratMap).map(([name, d]) => ({
     strategy: name,
     winRate:  Math.round((d.wins / d.total) * 100),
@@ -495,7 +470,6 @@ export default function Dashboard() {
     pnl:      Math.round(d.pnl),
   }));
 
-  // Exit reason breakdown
   const exitMap = closed.reduce((acc: Record<string,number>, t) => {
     const r = (t.reason || t.notes || "").toLowerCase();
     const type = r.includes("sl") || r.includes("stop") ? "Stop Loss"
@@ -509,7 +483,6 @@ export default function Dashboard() {
     .map(([type, count]) => ({ type, count }))
     .sort((a,b) => b.count - a.count);
 
-  // Clock
   const now = new Date();
   const ist = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
   const h = ist.getHours(), m = ist.getMinutes();
@@ -522,31 +495,30 @@ export default function Dashboard() {
     : trades.filter(t => t.status?.includes(filter));
 
   const NAV = [
-    { key: "overview",     icon: "◈", label: "Overview"    },
-    { key: "today",        icon: "◷", label: "Today"       },
+    { key: "overview",     icon: "◈", label: "Overview"     },
+    { key: "today",        icon: "◷", label: "Today"        },
     { key: "intelligence", icon: "🧠", label: "Intelligence" },
-    { key: "charts",       icon: "◫", label: "Charts"      },
-    { key: "stocks",       icon: "◉", label: "Stocks"      },
-    { key: "strategy",     icon: "◐", label: "Strategy"    },
-    { key: "log",          icon: "≡", label: "Trade Log"   },
+    { key: "charts",       icon: "◫", label: "Charts"       },
+    { key: "stocks",       icon: "◉", label: "Stocks"       },
+    { key: "strategy",     icon: "◐", label: "Strategy"     },
+    { key: "log",          icon: "≡", label: "Trade Log"    },
   ];
 
-  /* ── SIDEBAR ── */
-  const Sidebar = () => (
-    <div style={{ width: 230, background: T.surface,
-      borderRight: `1px solid ${T.border}`, display: "flex",
-      flexDirection: "column", height: "100vh",
-      position: "sticky", top: 0, flexShrink: 0 }}>
+  const chartGrid = <CartesianGrid strokeDasharray="3 3" stroke={T.border} vertical={false} />;
+  const xAP = { tick: { fontSize: 10, fill: T.muted, fontFamily: "'DM Mono', monospace" }, axisLine: { stroke: T.border }, tickLine: false };
+  const yAP = { tick: { fontSize: 10, fill: T.muted, fontFamily: "'DM Mono', monospace" }, axisLine: false, tickLine: false };
+  const ttP = { content: <CT />, cursor: { fill: `${T.borderHi}33` } };
 
-      {/* Logo */}
-      <div style={{ padding: "22px 20px 18px",
-        borderBottom: `1px solid ${T.border}` }}>
+  const Sidebar = () => (
+    <div style={{ width: 230, background: T.surface, borderRight: `1px solid ${T.border}`,
+      display: "flex", flexDirection: "column", height: "100vh",
+      position: "sticky", top: 0, flexShrink: 0 }}>
+      <div style={{ padding: "22px 20px 18px", borderBottom: `1px solid ${T.border}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8,
             background: `linear-gradient(135deg, ${T.accent}22, ${T.purple}22)`,
-            border: `1px solid ${T.accent}33`, display: "flex",
-            alignItems: "center", justifyContent: "center",
-            fontSize: 14, fontWeight: 900, color: T.accent,
+            border: `1px solid ${T.accent}33`, display: "flex", alignItems: "center",
+            justifyContent: "center", fontSize: 14, fontWeight: 900, color: T.accent,
             fontFamily: "'DM Mono', monospace" }}>₹</div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.text,
@@ -556,12 +528,8 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Market clock */}
-      <div style={{ padding: "12px 20px",
-        borderBottom: `1px solid ${T.border}` }}>
-        <div style={{ display: "flex", justifyContent: "space-between",
-          alignItems: "center" }}>
+      <div style={{ padding: "12px 20px", borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div style={{ width: 7, height: 7, borderRadius: "50%",
               background: mktOpen ? T.green : T.red,
@@ -572,8 +540,7 @@ export default function Dashboard() {
               {mktOpen ? "LIVE" : "CLOSED"}
             </span>
           </div>
-          <span style={{ fontSize: 11, color: T.muted,
-            fontFamily: "'DM Mono', monospace" }}>{istStr}</span>
+          <span style={{ fontSize: 11, color: T.muted, fontFamily: "'DM Mono', monospace" }}>{istStr}</span>
         </div>
         {mktOpen && (
           <div style={{ marginTop: 6, fontSize: 11,
@@ -583,40 +550,31 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-
-      {/* Quick stats */}
-      <div style={{ padding: "12px 16px",
-        borderBottom: `1px solid ${T.border}`,
+      <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`,
         display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {[
-          { label: "P&L", value: fmt(totalPnL), color: totalPnL >= 0 ? T.green : T.red },
-          { label: "Win %", value: `${winRate}%`, color: T.amber },
+          { label: "P&L",    value: fmt(totalPnL), color: totalPnL >= 0 ? T.green : T.red },
+          { label: "Win %",  value: `${winRate}%`, color: T.amber },
           { label: "Streak", value: streak > 0 ? `${streak}${streakType}` : "—",
             color: streakType === "W" ? T.green : streakType === "L" ? T.red : T.muted },
-          { label: "Open", value: open.length, color: open.length > 0 ? T.accent : T.muted },
+          { label: "Open",   value: open.length, color: open.length > 0 ? T.accent : T.muted },
         ].map(s => (
           <div key={s.label} style={{ background: T.card, borderRadius: 8,
             padding: "8px 10px", border: `1px solid ${T.border}` }}>
             <div style={{ fontSize: 8, color: T.dim, letterSpacing: 1.5,
-              textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>
-              {s.label}
-            </div>
+              textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>{s.label}</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: s.color as string,
               fontFamily: "'DM Mono', monospace", marginTop: 2 }}>{s.value}</div>
           </div>
         ))}
       </div>
-
-      {/* Nav */}
       <nav style={{ flex: 1, padding: "8px 10px", overflowY: "auto" }}>
         {NAV.map(({ key, icon, label }) => (
           <button key={key} onClick={() => setTab(key)} style={{
             width: "100%", display: "flex", alignItems: "center", gap: 10,
             padding: "11px 14px", borderRadius: 8, border: "none",
-            background: tab === key
-              ? `linear-gradient(90deg, ${T.accent}12, transparent)` : "transparent",
-            borderLeft: tab === key
-              ? `2px solid ${T.accent}` : "2px solid transparent",
+            background: tab === key ? `linear-gradient(90deg, ${T.accent}12, transparent)` : "transparent",
+            borderLeft: tab === key ? `2px solid ${T.accent}` : "2px solid transparent",
             color: tab === key ? T.accent : T.muted,
             cursor: "pointer", marginBottom: 2,
             fontFamily: "'DM Sans', sans-serif", fontSize: 14,
@@ -643,22 +601,17 @@ export default function Dashboard() {
           </button>
         ))}
       </nav>
-
-      {/* Refresh */}
-      <div style={{ padding: "12px 16px",
-        borderTop: `1px solid ${T.border}` }}>
+      <div style={{ padding: "12px 16px", borderTop: `1px solid ${T.border}` }}>
         <button onClick={load} disabled={loading} style={{
           width: "100%",
-          background: loading ? T.border
-            : `linear-gradient(135deg, ${T.accent}15, ${T.purple}15)`,
+          background: loading ? T.border : `linear-gradient(135deg, ${T.accent}15, ${T.purple}15)`,
           border: `1px solid ${loading ? T.border : T.accent + "33"}`,
           borderRadius: 8, color: loading ? T.muted : T.accent,
           padding: "10px", fontSize: 13, fontWeight: 600,
           cursor: loading ? "default" : "pointer",
           fontFamily: "'DM Sans', sans-serif",
-          display: "flex", alignItems: "center",
-          justifyContent: "center", gap: 8, outline: "none",
-        }}>
+          display: "flex", alignItems: "center", justifyContent: "center",
+          gap: 8, outline: "none" }}>
           {loading ? <Spinner /> : "↻"} {loading ? "Syncing…" : "Refresh"}
         </button>
         {synced && (
@@ -671,7 +624,6 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── MOBILE BOTTOM BAR ── */
   const BottomBar = () => (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0,
       background: T.surface, borderTop: `1px solid ${T.border}`,
@@ -685,10 +637,8 @@ export default function Dashboard() {
           background: "transparent",
           color: tab === key ? T.accent : T.muted,
           cursor: "pointer",
-          borderTop: tab === key
-            ? `2px solid ${T.accent}` : "2px solid transparent",
-          transition: "all 0.15s", outline: "none",
-        }}>
+          borderTop: tab === key ? `2px solid ${T.accent}` : "2px solid transparent",
+          transition: "all 0.15s", outline: "none" }}>
           <span style={{ fontSize: 17 }}>{icon}</span>
           <span style={{ fontSize: 9, marginTop: 3, letterSpacing: 0.5,
             fontFamily: "'DM Sans', sans-serif",
@@ -700,7 +650,6 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── MOBILE HEADER ── */
   const MobileHeader = () => (
     <div style={{ background: T.surface, borderBottom: `1px solid ${T.border}`,
       padding: "14px 16px", display: "flex", alignItems: "center",
@@ -735,23 +684,6 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── SHARED CHART PROPS ── */
-  const chartGrid = <CartesianGrid strokeDasharray="3 3"
-    stroke={T.border} vertical={false} />;
-  const xAxisProps = {
-    tick: { fontSize: 10, fill: T.muted, fontFamily: "'DM Mono', monospace" },
-    axisLine: { stroke: T.border }, tickLine: false,
-  };
-  const yAxisProps = {
-    tick: { fontSize: 10, fill: T.muted, fontFamily: "'DM Mono', monospace" },
-    axisLine: false, tickLine: false,
-  };
-  const tooltipProps = {
-    content: <CT />,
-    cursor: { fill: `${T.borderHi}33` },
-  };
-
-  /* ── CONTENT ── */
   const Content = () => (
     <div style={{ flex: 1, overflowY: "auto",
       padding: mobile ? "16px 16px 80px" : "28px 32px" }}>
@@ -763,13 +695,11 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ──────── OVERVIEW ──────── */}
+      {/* OVERVIEW */}
       {tab === "overview" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {/* KPI row */}
           <div style={{ display: "grid",
-            gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(5, 1fr)",
-            gap: 12 }}>
+            gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(5, 1fr)", gap: 12 }}>
             <KPI label="Total P&L" value={fmt(totalPnL)}
               sub={`${closed.length} closed`}
               color={totalPnL >= 0 ? T.green : T.red}
@@ -793,11 +723,8 @@ export default function Dashboard() {
               onClick={() => setTab("today")} />
           </div>
 
-          {/* Two column row */}
           <div style={{ display: "grid",
             gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
-
-            {/* Win/loss bar */}
             <Card accent={T.green}>
               <SLabel color={T.green}>Win / Loss</SLabel>
               <div style={{ height: 10, borderRadius: 5, overflow: "hidden",
@@ -808,8 +735,7 @@ export default function Dashboard() {
                 <div style={{ flex: 1,
                   background: `linear-gradient(90deg,${T.red},#c0003a)` }} />
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between",
-                marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
                 <span style={{ color: T.green, fontWeight: 700, fontSize: 13,
                   fontFamily: "'DM Mono', monospace" }}>
                   {wins.length} wins ({winRate}%)
@@ -819,30 +745,24 @@ export default function Dashboard() {
                   {losses.length} losses
                 </span>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr",
-                gap: 8 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 {[
-                  ["Best", `+₹${best.toFixed(0)}`, T.green],
-                  ["Worst", `₹${worst.toFixed(0)}`, T.red],
-                  ["Avg Win", `+₹${avgWin.toFixed(0)}`, T.green],
-                  ["Avg Loss", `₹${Math.abs(avgLoss).toFixed(0)}`, T.red],
+                  ["Best",     `+₹${best.toFixed(0)}`,            T.green],
+                  ["Worst",    `₹${worst.toFixed(0)}`,             T.red  ],
+                  ["Avg Win",  `+₹${avgWin.toFixed(0)}`,           T.green],
+                  ["Avg Loss", `₹${Math.abs(avgLoss).toFixed(0)}`, T.red  ],
                 ].map(([l,v,c]) => (
-                  <div key={l as string} style={{ background: T.surface,
-                    borderRadius: 8, padding: "8px 12px",
-                    border: `1px solid ${T.border}` }}>
+                  <div key={l as string} style={{ background: T.surface, borderRadius: 8,
+                    padding: "8px 12px", border: `1px solid ${T.border}` }}>
                     <div style={{ fontSize: 9, color: T.dim, letterSpacing: 1.5,
-                      textTransform: "uppercase",
-                      fontFamily: "'DM Sans', sans-serif" }}>{l}</div>
-                    <div style={{ fontSize: 14, fontWeight: 700,
-                      color: c as string,
-                      fontFamily: "'DM Mono', monospace",
-                      marginTop: 3 }}>{v}</div>
+                      textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>{l}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: c as string,
+                      fontFamily: "'DM Mono', monospace", marginTop: 3 }}>{v}</div>
                   </div>
                 ))}
               </div>
             </Card>
 
-            {/* Latest review */}
             <Card accent={T.accent}>
               <SLabel color={T.accent}>Latest Session</SLabel>
               {review?.summary
@@ -867,16 +787,14 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* System rules */}
           <Card>
             <SLabel>System Parameters</SLabel>
             <div style={{ display: "grid",
-              gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)",
-              gap: 10 }}>
+              gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 10 }}>
               {([
-                ["₹", "Capital / Trade", "₹2,000",   T.amber],
-                ["↓", "Stop Loss",       "1% below",  T.red  ],
-                ["↑", "Target",          "2% above",  T.green],
+                ["₹", "Capital / Trade", "₹2,000",   T.amber ],
+                ["↓", "Stop Loss",       "1% below",  T.red   ],
+                ["↑", "Target",          "2% above",  T.green ],
                 ["⏱", "Exit",           "15:00 IST", T.accent],
                 ["◈", "Strategy",        "ORB + MR",  T.purple],
                 ["◎", "Universe",        "Nifty 100", T.muted ],
@@ -893,8 +811,7 @@ export default function Dashboard() {
                     <div style={{ fontSize: 8, color: T.dim, letterSpacing: 1.5,
                       textTransform: "uppercase",
                       fontFamily: "'DM Sans', sans-serif" }}>{label}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700,
-                      color: color as string,
+                    <div style={{ fontSize: 12, fontWeight: 700, color: color as string,
                       fontFamily: "'DM Mono', monospace", marginTop: 2 }}>{val}</div>
                   </div>
                 </div>
@@ -904,12 +821,11 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ──────── TODAY ──────── */}
+      {/* TODAY */}
       {tab === "today" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "grid",
-            gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)",
-            gap: 12 }}>
+            gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 12 }}>
             <KPI label="Today P&L" value={fmt(todayPnL)}
               sub={`${todayTrades.filter(t => t.status === "⚫ CLOSED").length} closed`}
               color={todayPnL >= 0 ? T.green : T.red} />
@@ -929,9 +845,8 @@ export default function Dashboard() {
               </Card>
             : <Card style={{ padding: 0, overflow: "hidden" }}>
                 <div style={{ padding: "14px 20px",
-                  borderBottom: `1px solid ${T.border}`,
-                  background: T.surface }}>
-                  <SLabel>Today's Trades</SLabel>
+                  borderBottom: `1px solid ${T.border}`, background: T.surface }}>
+                  <SLabel>Today&apos;s Trades</SLabel>
                 </div>
                 {todayTrades.map(t => (
                   <TradeRow key={t.id} trade={t} updating={updating}
@@ -942,26 +857,19 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ──────── INTELLIGENCE ──────── */}
+      {/* INTELLIGENCE */}
       {tab === "intelligence" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {fw ? (
             <>
-              {/* Stats */}
               <div style={{ display: "grid",
-                gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)",
-                gap: 12 }}>
-                <KPI label="Trading Days" value={fw.dayCount}
-                  sub="Sessions logged" color={T.accent} />
-                <KPI label="Active Rules" value={fw.rules.length}
-                  sub="Governing system" color={T.purple} />
-                <KPI label="Learnings" value={fw.learnings.length}
-                  sub="Captured insights" color={T.green} />
-                <KPI label="Hypotheses" value={fw.hypotheses.length}
-                  sub="Being tested" color={T.amber} />
+                gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 12 }}>
+                <KPI label="Trading Days"  value={fw.dayCount}          sub="Sessions logged"   color={T.accent}  />
+                <KPI label="Active Rules"  value={fw.rules.length}      sub="Governing system"  color={T.purple}  />
+                <KPI label="Learnings"     value={fw.learnings.length}  sub="Captured insights" color={T.green}   />
+                <KPI label="Hypotheses"    value={fw.hypotheses.length} sub="Being tested"      color={T.amber}   />
               </div>
 
-              {/* Active Rules */}
               {fw.rules.length > 0 && (
                 <Card accent={T.purple}>
                   <SLabel color={T.purple}>Active Rules</SLabel>
@@ -983,7 +891,6 @@ export default function Dashboard() {
                 </Card>
               )}
 
-              {/* Learnings */}
               {fw.learnings.length > 0 && (
                 <Card accent={T.green}>
                   <SLabel color={T.green}>Recent Learnings</SLabel>
@@ -1005,7 +912,6 @@ export default function Dashboard() {
                 </Card>
               )}
 
-              {/* Hypotheses */}
               {fw.hypotheses.length > 0 && (
                 <Card accent={T.amber}>
                   <SLabel color={T.amber}>Hypothesis Tracker</SLabel>
@@ -1054,24 +960,20 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ──────── CHARTS ──────── */}
+      {/* CHARTS */}
       {tab === "charts" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-
-          {/* Daily P&L */}
           <Card>
             <SLabel color={T.accent}>Daily P&L</SLabel>
             {dailyData.length === 0
-              ? <div style={{ padding: "32px 0", textAlign: "center",
-                  color: T.dim, fontSize: 13,
+              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.dim, fontSize: 13,
                   fontFamily: "'DM Sans', sans-serif" }}>No data yet</div>
               : <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={dailyData}
-                    margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
+                  <BarChart data={dailyData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
                     {chartGrid}
-                    <XAxis dataKey="date" {...xAxisProps} />
-                    <YAxis {...yAxisProps} />
-                    <Tooltip {...tooltipProps} />
+                    <XAxis dataKey="date" {...xAP} />
+                    <YAxis {...yAP} />
+                    <Tooltip {...ttP} />
                     <Bar dataKey="pnl" radius={[3,3,0,0]}>
                       {dailyData.map((e,i) => (
                         <Cell key={i} fill={e.pnl >= 0 ? T.green : T.red} />
@@ -1082,63 +984,53 @@ export default function Dashboard() {
             }
           </Card>
 
-          {/* Cumulative P&L */}
           <Card>
             <SLabel color={T.purple}>Cumulative P&L</SLabel>
             {cumData.length === 0
-              ? <div style={{ padding: "32px 0", textAlign: "center",
-                  color: T.dim, fontSize: 13,
+              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.dim, fontSize: 13,
                   fontFamily: "'DM Sans', sans-serif" }}>No data yet</div>
               : <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={cumData}
-                    margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
+                  <LineChart data={cumData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
                     {chartGrid}
-                    <XAxis dataKey="date" {...xAxisProps} />
-                    <YAxis {...yAxisProps} />
-                    <Tooltip content={<CT />}
-                      cursor={{ stroke: T.borderHi, strokeWidth: 1 }} />
-                    <Line type="monotone" dataKey="pnl"
-                      stroke={T.purple} strokeWidth={2}
+                    <XAxis dataKey="date" {...xAP} />
+                    <YAxis {...yAP} />
+                    <Tooltip content={<CT />} cursor={{ stroke: T.borderHi, strokeWidth: 1 }} />
+                    <Line type="monotone" dataKey="pnl" stroke={T.purple} strokeWidth={2}
                       dot={{ fill: T.purple, r: 3, strokeWidth: 0 }}
-                      activeDot={{ r: 5, fill: T.purple,
-                        stroke: T.surface, strokeWidth: 2 }} />
+                      activeDot={{ r: 5, fill: T.purple, stroke: T.surface, strokeWidth: 2 }} />
                   </LineChart>
                 </ResponsiveContainer>
             }
           </Card>
 
-          {/* Day of week */}
           <Card>
             <SLabel color={T.amber}>P&L by Day of Week</SLabel>
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={dowData}
-                margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
+              <BarChart data={dowData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
                 {chartGrid}
-                <XAxis dataKey="day" {...xAxisProps} />
-                <YAxis {...yAxisProps} />
-                <Tooltip {...tooltipProps} />
+                <XAxis dataKey="day" {...xAP} />
+                <YAxis {...yAP} />
+                <Tooltip {...ttP} />
                 <Bar dataKey="pnl" radius={[3,3,0,0]}>
                   {dowData.map((e,i) => (
-                    <Cell key={i} fill={e.pnl >= 0 ? T.green : e.pnl < 0 ? T.red : T.dim} />
+                    <Cell key={i} fill={e.pnl > 0 ? T.green : e.pnl < 0 ? T.red : T.dim} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </Card>
 
-          {/* Exit reason */}
           {exitData.length > 0 && (
             <Card>
               <SLabel color={T.teal}>Exit Reason Breakdown</SLabel>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {exitData.map(({ type, count }) => {
                   const pct = Math.round((count / closed.length) * 100);
                   const color = type === "Target Hit" ? T.green
                     : type === "Stop Loss" ? T.red : T.amber;
                   return (
                     <div key={type}>
-                      <div style={{ display: "flex", justifyContent: "space-between",
-                        marginBottom: 4 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                         <span style={{ fontSize: 12, color: T.text,
                           fontFamily: "'DM Sans', sans-serif" }}>{type}</span>
                         <span style={{ fontSize: 12, color, fontWeight: 700,
@@ -1146,11 +1038,9 @@ export default function Dashboard() {
                           {count} ({pct}%)
                         </span>
                       </div>
-                      <div style={{ height: 6, borderRadius: 3,
-                        background: T.surface, overflow: "hidden" }}>
+                      <div style={{ height: 6, borderRadius: 3, background: T.surface, overflow: "hidden" }}>
                         <div style={{ width: `${pct}%`, height: "100%",
-                          background: color, borderRadius: 3,
-                          transition: "width 0.8s ease" }} />
+                          background: color, borderRadius: 3, transition: "width 0.8s ease" }} />
                       </div>
                     </div>
                   );
@@ -1161,26 +1051,23 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ──────── STOCKS ──────── */}
+      {/* STOCKS */}
       {tab === "stocks" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Card>
             <SLabel color={T.accent}>P&L by Stock</SLabel>
             {stockData.length === 0
-              ? <div style={{ padding: "32px 0", textAlign: "center",
-                  color: T.dim, fontSize: 13,
+              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.dim, fontSize: 13,
                   fontFamily: "'DM Sans', sans-serif" }}>No data yet</div>
               : <ResponsiveContainer width="100%" height={Math.max(200, stockData.length * 36)}>
                   <BarChart data={stockData} layout="vertical"
                     margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3"
-                      stroke={T.border} horizontal={false} />
-                    <XAxis type="number" {...xAxisProps} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={T.border} horizontal={false} />
+                    <XAxis type="number" {...xAP} />
                     <YAxis dataKey="stock" type="category" width={80}
-                      tick={{ fontSize: 10, fill: T.text,
-                        fontFamily: "'DM Mono', monospace" }}
+                      tick={{ fontSize: 10, fill: T.text, fontFamily: "'DM Mono', monospace" }}
                       axisLine={false} tickLine={false} />
-                    <Tooltip {...tooltipProps} />
+                    <Tooltip {...ttP} />
                     <Bar dataKey="pnl" radius={[0,3,3,0]}>
                       {stockData.map((e,i) => (
                         <Cell key={i} fill={e.pnl >= 0 ? T.green : T.red} />
@@ -1191,44 +1078,32 @@ export default function Dashboard() {
             }
           </Card>
 
-          {/* Stock detail table */}
           {stockData.length > 0 && (
             <Card style={{ padding: 0, overflow: "hidden" }}>
-              <div style={{ padding: "14px 20px",
-                borderBottom: `1px solid ${T.border}`,
+              <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`,
                 background: T.surface }}>
                 <SLabel>Stock Details</SLabel>
               </div>
-              <div style={{ display: "grid",
-                gridTemplateColumns: "1fr 60px 60px 80px",
-                padding: "8px 20px",
-                fontSize: 9, letterSpacing: 1.5, color: T.dim,
-                textTransform: "uppercase",
-                fontFamily: "'DM Mono', monospace", fontWeight: 700,
-                borderBottom: `1px solid ${T.border}`,
-                background: T.surface }}>
-                <div>Stock</div>
-                <div>Trades</div>
-                <div>Win %</div>
-                <div>P&L</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 60px 80px",
+                padding: "8px 20px", fontSize: 9, letterSpacing: 1.5, color: T.dim,
+                textTransform: "uppercase", fontFamily: "'DM Mono', monospace", fontWeight: 700,
+                borderBottom: `1px solid ${T.border}`, background: T.surface }}>
+                <div>Stock</div><div>Trades</div><div>Win %</div><div>P&L</div>
               </div>
               {stockData.map(s => (
                 <div key={s.stock} style={{ display: "grid",
                   gridTemplateColumns: "1fr 60px 60px 80px",
-                  padding: "12px 20px",
-                  borderBottom: `1px solid ${T.border}`,
+                  padding: "12px 20px", borderBottom: `1px solid ${T.border}`,
                   alignItems: "center" }}>
-                  <span style={{ fontWeight: 600, fontSize: 13,
-                    color: T.text,
+                  <span style={{ fontWeight: 600, fontSize: 13, color: T.text,
                     fontFamily: "'DM Mono', monospace" }}>{s.stock}</span>
                   <span style={{ fontSize: 12, color: T.muted,
                     fontFamily: "'DM Mono', monospace" }}>{s.count}</span>
                   <span style={{ fontSize: 12, fontWeight: 700,
                     color: s.wr >= 55 ? T.green : s.wr >= 40 ? T.amber : T.red,
                     fontFamily: "'DM Mono', monospace" }}>{s.wr}%</span>
-                  <span style={{ fontFamily: "'DM Mono', monospace",
-                    fontWeight: 700, fontSize: 13,
-                    color: s.pnl >= 0 ? T.green : T.red }}>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontWeight: 700,
+                    fontSize: 13, color: s.pnl >= 0 ? T.green : T.red }}>
                     {s.pnl >= 0 ? "+" : ""}₹{s.pnl}
                   </span>
                 </div>
@@ -1238,11 +1113,9 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ──────── STRATEGY ──────── */}
+      {/* STRATEGY */}
       {tab === "strategy" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-          {/* Strategy P&L chart */}
           {Object.keys(stratMap).length > 0 && (
             <Card>
               <SLabel color={T.purple}>Strategy P&L Comparison</SLabel>
@@ -1250,17 +1123,15 @@ export default function Dashboard() {
                 <BarChart
                   data={Object.entries(stratMap).map(([name, d]) => ({
                     name, pnl: Math.round(d.pnl),
-                    wr: Math.round((d.wins/d.total)*100),
                   }))}
                   margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
                   {chartGrid}
-                  <XAxis dataKey="name" {...xAxisProps} />
-                  <YAxis {...yAxisProps} />
-                  <Tooltip {...tooltipProps} />
+                  <XAxis dataKey="name" {...xAP} />
+                  <YAxis {...yAP} />
+                  <Tooltip {...ttP} />
                   <Bar dataKey="pnl" radius={[3,3,0,0]}>
                     {Object.entries(stratMap).map(([,d], i) => (
-                      <Cell key={i}
-                        fill={d.pnl >= 0 ? T.green : T.red} />
+                      <Cell key={i} fill={d.pnl >= 0 ? T.green : T.red} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -1268,7 +1139,6 @@ export default function Dashboard() {
             </Card>
           )}
 
-          {/* Strategy radar */}
           {radarData.length > 1 && (
             <Card>
               <SLabel color={T.teal}>Win Rate by Strategy</SLabel>
@@ -1276,17 +1146,14 @@ export default function Dashboard() {
                 <RadarChart data={radarData}>
                   <PolarGrid stroke={T.border} />
                   <PolarAngleAxis dataKey="strategy"
-                    tick={{ fontSize: 10, fill: T.muted,
-                      fontFamily: "'DM Mono', monospace" }} />
+                    tick={{ fontSize: 10, fill: T.muted, fontFamily: "'DM Mono', monospace" }} />
                   <Radar dataKey="winRate" stroke={T.teal}
-                    fill={T.teal} fillOpacity={0.15}
-                    strokeWidth={2} />
+                    fill={T.teal} fillOpacity={0.15} strokeWidth={2} />
                 </RadarChart>
               </ResponsiveContainer>
             </Card>
           )}
 
-          {/* Strategy cards */}
           {Object.entries(stratMap)
             .sort(([,a],[,b]) => b.pnl - a.pnl)
             .map(([name, data]) => {
@@ -1296,29 +1163,26 @@ export default function Dashboard() {
                   <div style={{ display: "flex", justifyContent: "space-between",
                     alignItems: "flex-start", marginBottom: 14 }}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: 15,
-                        color: T.text, fontFamily: "'DM Sans', sans-serif" }}>
-                        {name}
-                      </div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: T.text,
+                        fontFamily: "'DM Sans', sans-serif" }}>{name}</div>
                       <div style={{ fontSize: 11, color: T.muted, marginTop: 3,
                         fontFamily: "'DM Mono', monospace" }}>
                         {data.total} trades · {data.wins}W · {data.total - data.wins}L
                       </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: "'DM Mono', monospace",
-                        fontSize: 20, fontWeight: 900,
-                        color: data.pnl >= 0 ? T.green : T.red }}>
+                      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 20,
+                        fontWeight: 900, color: data.pnl >= 0 ? T.green : T.red }}>
                         {data.pnl >= 0 ? "+" : ""}₹{data.pnl.toFixed(0)}
                       </div>
-                      <div style={{ fontSize: 11, color: T.muted,
-                        fontFamily: "'DM Mono', monospace", marginTop: 2 }}>
+                      <div style={{ fontSize: 11, color: T.muted, marginTop: 2,
+                        fontFamily: "'DM Mono', monospace" }}>
                         {wr}% win rate
                       </div>
                     </div>
                   </div>
-                  <div style={{ height: 6, borderRadius: 3,
-                    overflow: "hidden", background: T.surface, display: "flex" }}>
+                  <div style={{ height: 6, borderRadius: 3, overflow: "hidden",
+                    background: T.surface, display: "flex" }}>
                     <div style={{ width: `${wr}%`,
                       background: `linear-gradient(90deg,${T.green},#00b050)` }} />
                     <div style={{ flex: 1,
@@ -1332,15 +1196,13 @@ export default function Dashboard() {
           {Object.keys(stratMap).length === 0 && (
             <Card style={{ padding: 48, textAlign: "center" }}>
               <div style={{ color: T.dim, fontSize: 13,
-                fontFamily: "'DM Sans', sans-serif" }}>
-                No closed trades yet.
-              </div>
+                fontFamily: "'DM Sans', sans-serif" }}>No closed trades yet.</div>
             </Card>
           )}
         </div>
       )}
 
-      {/* ──────── TRADE LOG ──────── */}
+      {/* TRADE LOG */}
       {tab === "log" && (
         <div>
           <div style={{ display: "flex", gap: 6, marginBottom: 16,
@@ -1351,8 +1213,7 @@ export default function Dashboard() {
             {["ALL","PENDING","APPROVED","EXECUTED","CLOSED","REJECTED"].map(f => (
               <button key={f} onClick={() => setFilter(f)} style={{
                 background: filter === f ? `${T.accent}15` : "transparent",
-                border: filter === f
-                  ? `1px solid ${T.accent}55` : `1px solid ${T.border}`,
+                border: filter === f ? `1px solid ${T.accent}55` : `1px solid ${T.border}`,
                 color: filter === f ? T.accent : T.muted,
                 borderRadius: 6, padding: "5px 12px", fontSize: 11,
                 fontWeight: 700, cursor: "pointer", letterSpacing: 0.5,
@@ -1360,10 +1221,9 @@ export default function Dashboard() {
                 transition: "all 0.15s", outline: "none" }}>{f}</button>
             ))}
             {synced && !mobile && (
-              <span style={{ marginLeft: "auto", fontSize: 9,
-                color: T.dim, fontFamily: "'DM Mono', monospace" }}>
-                Synced {synced.toLocaleTimeString("en-IN",
-                  { timeZone: "Asia/Kolkata" })} IST
+              <span style={{ marginLeft: "auto", fontSize: 9, color: T.dim,
+                fontFamily: "'DM Mono', monospace" }}>
+                Synced {synced.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })} IST
               </span>
             )}
           </div>
@@ -1371,13 +1231,11 @@ export default function Dashboard() {
           <Card style={{ padding: 0, overflow: "hidden" }}>
             {!mobile && (
               <div style={{ display: "grid",
-                gridTemplateColumns:
-                  "2fr 100px 90px 90px 90px 60px 90px 1fr",
+                gridTemplateColumns: "2fr 100px 90px 90px 90px 60px 90px 1fr",
                 padding: "9px 20px", gap: 8,
                 fontSize: 9, letterSpacing: 1.5, color: T.dim,
-                textTransform: "uppercase",
-                fontFamily: "'DM Mono', monospace", fontWeight: 700,
-                borderBottom: `1px solid ${T.border}`,
+                textTransform: "uppercase", fontFamily: "'DM Mono', monospace",
+                fontWeight: 700, borderBottom: `1px solid ${T.border}`,
                 background: T.surface }}>
                 <div>Trade</div><div>Status</div><div>Entry</div>
                 <div>SL</div><div>Target</div><div>Qty</div>
@@ -1408,15 +1266,13 @@ export default function Dashboard() {
             {filtered.length > 0 && closed.length > 0 && (
               <div style={{ padding: "12px 20px", background: T.surface,
                 borderTop: `1px solid ${T.border}`,
-                display: "flex", justifyContent: "space-between",
-                alignItems: "center" }}>
+                display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 10, color: T.muted,
                   fontFamily: "'DM Mono', monospace", letterSpacing: 1 }}>
                   TOTAL · {closed.length} CLOSED TRADES
                 </span>
-                <span style={{ fontFamily: "'DM Mono', monospace",
-                  fontSize: 15, fontWeight: 900,
-                  color: totalPnL >= 0 ? T.green : T.red }}>
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 15,
+                  fontWeight: 900, color: totalPnL >= 0 ? T.green : T.red }}>
                   {fmt(totalPnL)}
                 </span>
               </div>
@@ -1427,7 +1283,6 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── ROOT ── */
   return (
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text }}>
       <style>{`
@@ -1446,8 +1301,7 @@ export default function Dashboard() {
       `}</style>
 
       {urgent && (
-        <div style={{ background: "#3a0010",
-          borderBottom: `1px solid ${T.red}`,
+        <div style={{ background: "#3a0010", borderBottom: `1px solid ${T.red}`,
           padding: "9px 20px", textAlign: "center",
           fontSize: 12, fontWeight: 700, color: "#ff8099",
           animation: "flash 1.2s ease-in-out infinite",
@@ -1458,8 +1312,7 @@ export default function Dashboard() {
       )}
 
       {toast && (
-        <div style={{ position: "fixed",
-          bottom: mobile ? 80 : 24, right: 20, zIndex: 99,
+        <div style={{ position: "fixed", bottom: mobile ? 80 : 24, right: 20, zIndex: 99,
           background: toast.ok ? "#001f0f" : "#2a0010",
           border: `1px solid ${toast.ok ? T.green : T.red}`,
           borderRadius: 10, padding: "11px 18px",
@@ -1488,3 +1341,5 @@ export default function Dashboard() {
         </div>
       )}
     </div>
+  );
+}
