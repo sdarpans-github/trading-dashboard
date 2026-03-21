@@ -1312,7 +1312,7 @@ export default function Dashboard() {
                         {data.pnl >= 0 ? "+" : ""}₹{data.pnl.toFixed(0)}
                       </div>
                       <div style={{ fontSize: 11, color: T.muted,
-                        fontFamily: "'DM Mono', monospace', marginTop: 2 }}>
+                        fontFamily: "'DM Mono', monospace", marginTop: 2 }}>
                         {wr}% win rate
                       </div>
                     </div>
