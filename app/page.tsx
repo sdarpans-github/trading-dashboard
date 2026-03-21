@@ -942,7 +942,7 @@ export default function Dashboard() {
           {!framework && !loading && (
             <Card style={{ padding: 48, textAlign: "center" }}>
               <div style={{ color: T.dim, fontSize: 13,
-                fontFamily: "'DM Sans', sans-serif' }}>
+                fontFamily: "'DM Sans', sans-serif" }}>
                 Intelligence data loading… tap Refresh if this persists.
               </div>
             </Card>
