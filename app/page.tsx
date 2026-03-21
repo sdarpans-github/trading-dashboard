@@ -1097,7 +1097,7 @@ export default function Dashboard() {
                     {LEARNING_GROUPS.map(g => (
                       <button key={g.label} onClick={() => setLgGroup(lgGroup === g.label ? null : g.label)} style={{
                         padding: "4px 12px", borderRadius: 16, fontSize: 11,
-                        fontWeight: lgGroup === g.label ? 700 : 400, border: "none",
+                        fontWeight: lgGroup === g.label ? 700 : 400,
                         cursor: "pointer", outline: "none",
                         background: lgGroup === g.label ? g.color : T.bg,
                         color: lgGroup === g.label ? "#fff" : T.muted,
