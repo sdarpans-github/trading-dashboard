@@ -848,7 +848,7 @@ export default function Dashboard() {
               {review?.summary
                 ? <>
                     <div style={{ fontSize: 12, color: T.text, lineHeight: 1.8,
-                      fontFamily: "'DM Sans', sans-serif,
+                      fontFamily: "'DM Sans', sans-serif",
                       borderLeft: `2px solid ${T.accent}44`,
                       paddingLeft: 12, marginBottom: 12 }}>
                       {review.summary.slice(0, 250)}
