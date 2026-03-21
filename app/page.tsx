@@ -6,94 +6,50 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
 } from "recharts";
 
-/* ─────────────────────────────────────────
-   TIME-BASED DEFAULT THEME
-───────────────────────────────────────── */
+/* ─── TIME-BASED DEFAULT ─── */
 function getDefaultTheme(): "dark" | "warm" | "green" {
   const ist = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
   const h = ist.getHours();
   return (h >= 6 && h < 19) ? "warm" : "dark";
 }
 
-/* ─────────────────────────────────────────
-   THREE THEMES
-───────────────────────────────────────── */
+/* ─── THEMES ─── */
 const THEMES = {
   dark: {
-    name: "Dark",
-    bg:       "#0d1117",
-    surface:  "#161b22",
-    card:     "#1c2128",
-    border:   "#30363d",
-    borderHi: "#484f58",
-    text:     "#e6edf3",
-    muted:    "#7d8590",
-    dim:      "#3d444d",
-    accent:   "#2f81f7",
-    green:    "#3fb950",
-    red:      "#f85149",
-    amber:    "#e3b341",
-    purple:   "#a371f7",
-    teal:     "#39d353",
-    greenBg:  "#0d2b1a",
-    redBg:    "#2d0f0f",
-    amberBg:  "#2b1d0e",
+    bg: "#0d1117", surface: "#161b22", card: "#1c2128",
+    border: "#30363d", borderHi: "#484f58",
+    text: "#e6edf3", muted: "#7d8590", dim: "#3d444d",
+    accent: "#2f81f7", green: "#3fb950", red: "#f85149",
+    amber: "#e3b341", purple: "#a371f7", teal: "#39d353",
+    greenBg: "#0d2b1a", redBg: "#2d0f0f", amberBg: "#2b1d0e",
   },
   warm: {
-    name: "Warm Sand",
-    bg:       "#faf8f5",
-    surface:  "#f2ede8",
-    card:     "#ffffff",
-    border:   "#e0d8ce",
-    borderHi: "#c8bdb0",
-    text:     "#1c1917",
-    muted:    "#78716c",
-    dim:      "#c4b9af",
-    accent:   "#0f766e",
-    green:    "#15803d",
-    red:      "#be123c",
-    amber:    "#b45309",
-    purple:   "#7c3aed",
-    teal:     "#0e7490",
-    greenBg:  "#dcfce7",
-    redBg:    "#ffe4e6",
-    amberBg:  "#fef3c7",
+    bg: "#faf8f5", surface: "#f2ede8", card: "#ffffff",
+    border: "#e0d8ce", borderHi: "#c8bdb0",
+    text: "#1c1917", muted: "#78716c", dim: "#c4b9af",
+    accent: "#0f766e", green: "#15803d", red: "#be123c",
+    amber: "#b45309", purple: "#7c3aed", teal: "#0e7490",
+    greenBg: "#dcfce7", redBg: "#ffe4e6", amberBg: "#fef3c7",
   },
   green: {
-    name: "Soft Green",
-    bg:       "#f0fdf4",
-    surface:  "#dcfce7",
-    card:     "#ffffff",
-    border:   "#bbf7d0",
-    borderHi: "#86efac",
-    // FIX: near-black text for readability — green only for backgrounds/accents
-    text:     "#1a2e1a",
-    muted:    "#3d6b52",
-    dim:      "#a3c9b0",
-    accent:   "#0369a1",
-    green:    "#15803d",
-    red:      "#b91c1c",
-    amber:    "#a16207",
-    purple:   "#6d28d9",
-    teal:     "#0e7490",
-    greenBg:  "#dcfce7",
-    redBg:    "#fee2e2",
-    amberBg:  "#fef9c3",
+    bg: "#f0fdf4", surface: "#dcfce7", card: "#ffffff",
+    border: "#bbf7d0", borderHi: "#86efac",
+    text: "#1a2e1a", muted: "#3d6b52", dim: "#a3c9b0",
+    accent: "#0369a1", green: "#15803d", red: "#b91c1c",
+    amber: "#a16207", purple: "#6d28d9", teal: "#0e7490",
+    greenBg: "#dcfce7", redBg: "#fee2e2", amberBg: "#fef9c3",
   },
 };
-
 type ThemeKey = keyof typeof THEMES;
-type Theme    = typeof THEMES.dark;
+type Theme = typeof THEMES.dark;
 
-/* ─────────────────────────────────────────
-   STRATEGY + KPI INFO
-───────────────────────────────────────── */
+/* ─── STATIC DATA ─── */
 const STRATEGY_INFO: Record<string, { icon: string; short: string; when: string }> = {
-  "ORB":         { icon: "📐", short: "Opening Range Breakout",    when: "Best when VIX < 18, trending market. Entry after 9:30 AM candle." },
-  "Mean Rev":    { icon: "↩️", short: "Mean Reversion Bounce",     when: "Best when VIX > 20. Stock near 52-week low with DII buying." },
-  "Momentum":    { icon: "🚀", short: "Relative Strength Play",    when: "Stock up while Nifty is flat or negative. Volume above average." },
+  "ORB":         { icon: "📐", short: "Opening Range Breakout",    when: "VIX < 18, trending market. Entry after 9:30 AM candle." },
+  "Mean Rev":    { icon: "↩️", short: "Mean Reversion Bounce",     when: "VIX > 20. Stock near 52-week low with DII buying." },
+  "Momentum":    { icon: "🚀", short: "Relative Strength Play",    when: "Stock up while Nifty is flat or negative. Volume above avg." },
   "Dual Signal": { icon: "⭐", short: "Momentum + Mean Rev combo", when: "Highest conviction — 100% win rate across 6 trades so far." },
-  "Crisis":      { icon: "⚡", short: "Crisis Beneficiary",        when: "Geopolitical/oil shock. Scan upstream E&P and domestic fuel stocks." },
+  "Crisis":      { icon: "⚡", short: "Crisis Beneficiary",        when: "Geopolitical/oil shock. Upstream E&P + domestic fuel stocks." },
   "Other":       { icon: "◈",  short: "Custom Setup",              when: "Context-specific trade outside standard strategies." },
 };
 
@@ -112,6 +68,14 @@ const KPI_INFO: Record<string, string> = {
   "Hypotheses":    "Patterns being tested — need 10+ data points to confirm.",
 };
 
+const LEARNING_GROUPS: { label: string; color: string; ids: string[] }[] = [
+  { label: "🎯 Strategy",   color: "#2f81f7", ids: ["L1","L2","L6","L11","L21"] },
+  { label: "⚠️ Execution",  color: "#e3b341", ids: ["L3","L10","L16"] },
+  { label: "🧠 Market",     color: "#a371f7", ids: ["L8","L13","L17","L20"] },
+  { label: "🛡️ Risk",       color: "#3fb950", ids: ["L4","L7","L9","L14","L15","L18"] },
+  { label: "📈 Stocks",     color: "#39d353", ids: ["L5","L12","L19"] },
+];
+
 type Trade = {
   id: string; createdTime: string; tradeName: string; stock: string;
   status: string; entryPrice: number | null; stopLoss: number | null;
@@ -124,7 +88,7 @@ type Hypothesis = { id: string; text: string; status: string };
 type Framework  = { rules: Rule[]; learnings: Learning[]; hypotheses: Hypothesis[]; dayCount: number };
 type Review     = { title: string; date: string; summary: string };
 
-const makeStatusConfig = (T: Theme) => ({
+const makeSC = (T: Theme) => ({
   "🟡 PENDING":  { color: T.amber,  bg: T.amberBg,     label: "PENDING"  },
   "✅ APPROVED": { color: T.green,  bg: T.greenBg,     label: "APPROVED" },
   "🔵 EXECUTED": { color: T.accent, bg: T.accent+"18", label: "EXECUTED" },
@@ -133,17 +97,9 @@ const makeStatusConfig = (T: Theme) => ({
 });
 
 const ACTIONS: Record<string, { action: string; label: string; key: keyof Theme }[]> = {
-  "🟡 PENDING":  [
-    { action: "APPROVE", label: "Approve", key: "green"  },
-    { action: "REJECT",  label: "Reject",  key: "red"    },
-  ],
-  "✅ APPROVED": [
-    { action: "EXECUTE", label: "Execute", key: "accent" },
-    { action: "REJECT",  label: "Reject",  key: "red"    },
-  ],
-  "🔵 EXECUTED": [
-    { action: "CLOSE",   label: "Close",   key: "muted"  },
-  ],
+  "🟡 PENDING":  [{ action:"APPROVE",label:"Approve",key:"green"},{action:"REJECT",label:"Reject",key:"red"}],
+  "✅ APPROVED": [{ action:"EXECUTE",label:"Execute",key:"accent"},{action:"REJECT",label:"Reject",key:"red"}],
+  "🔵 EXECUTED": [{ action:"CLOSE",  label:"Close",  key:"muted"}],
 };
 
 function fmt(n: number | null) {
@@ -151,27 +107,202 @@ function fmt(n: number | null) {
   return (n >= 0 ? "+" : "") + "₹" + Math.abs(n).toFixed(0);
 }
 
-/* ─────────────────────────────────────────
-   THEME TOGGLE — 3 pills, active highlighted
-───────────────────────────────────────── */
-function ThemeToggle({ current, onChange, T }: {
-  current: ThemeKey; onChange: (k: ThemeKey) => void; T: Theme;
+/* ─── TOOLTIP PORTAL ─── */
+// Renders tooltips at document body level to avoid overflow:hidden clipping
+function Tip({ text, T }: { text: string; T: Theme }) {
+  const [show, setShow] = useState(false);
+  const [pos, setPos]   = useState({ top: 0, left: 0 });
+  const ref = useRef<HTMLButtonElement>(null);
+
+  const open = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    setPos({ top: r.top - 8 + window.scrollY, left: r.left + r.width / 2 });
+    setShow(s => !s);
+  };
+
+  useEffect(() => {
+    if (!show) return;
+    const h = () => setShow(false);
+    document.addEventListener("click", h);
+    return () => document.removeEventListener("click", h);
+  }, [show]);
+
+  return (
+    <>
+      <button ref={ref} onClick={open}
+        style={{ background: "transparent", border: "1px solid " + T.border,
+          borderRadius: "50%", width: 15, height: 15, color: T.muted,
+          fontSize: 8, cursor: "pointer", display: "inline-flex", alignItems: "center",
+          justifyContent: "center", fontWeight: 800, outline: "none", flexShrink: 0,
+          verticalAlign: "middle" }}>
+        ?
+      </button>
+      {show && (
+        <div onClick={e => e.stopPropagation()}
+          style={{ position: "absolute", top: pos.top - 8, left: pos.left,
+            transform: "translate(-50%, -100%)",
+            background: T.card, border: "1px solid " + T.borderHi,
+            borderRadius: 8, padding: "8px 12px", fontSize: 11, color: T.text,
+            fontFamily: "DM Sans, sans-serif", lineHeight: "1.5",
+            whiteSpace: "nowrap", zIndex: 9999,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+            pointerEvents: "none" }}>
+          {text}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ─── STRATEGY TAG ─── */
+function StrategyTag({ name, T }: { name: string; T: Theme }) {
+  const [show, setShow] = useState(false);
+  const info = STRATEGY_INFO[name] || STRATEGY_INFO["Other"];
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!show) return;
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setShow(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [show]);
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button onClick={() => setShow(!show)} style={{
+        background: "transparent", border: "none", cursor: "pointer",
+        outline: "none", padding: 0, display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 16 }}>{info.icon}</span>
+        <span style={{ fontWeight: 700, fontSize: 15, color: T.text, fontFamily: "DM Sans, sans-serif" }}>{name}</span>
+        <span style={{ fontSize: 11, color: T.muted, opacity: 0.7 }}>ⓘ</span>
+      </button>
+      {show && (
+        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0,
+          background: T.card, border: "1px solid " + T.borderHi,
+          borderRadius: 10, padding: "12px 16px", zIndex: 200, minWidth: 260,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.text, fontFamily: "DM Sans, sans-serif", marginBottom: 4 }}>{info.short}</div>
+          <div style={{ fontSize: 11, color: T.muted, fontFamily: "DM Sans, sans-serif", lineHeight: "1.6" }}>{info.when}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── BADGE ─── */
+function Badge({ status, T }: { status: string; T: Theme }) {
+  const sc = makeSC(T);
+  const c = sc[status as keyof typeof sc] || { color: T.muted, bg: T.surface, label: status };
+  return (
+    <span style={{ background: c.bg, color: c.color, border: "1px solid " + c.color + "40",
+      borderRadius: 4, fontSize: 9, fontWeight: 700, letterSpacing: 1.5,
+      padding: "2px 7px", fontFamily: "DM Mono, monospace", whiteSpace: "nowrap" }}>
+      {c.label}
+    </span>
+  );
+}
+
+/* ─── KPI CARD ─── */
+function KPI({ label, value, sub, color, onClick, T }: {
+  label: string; value: string | number; sub?: string;
+  color: string; onClick?: () => void; T: Theme;
 }) {
-  const options: { key: ThemeKey; icon: string; label: string }[] = [
-    { key: "dark",  icon: "🌙", label: "Dark"  },
-    { key: "warm",  icon: "🌅", label: "Warm"  },
-    { key: "green", icon: "🌿", label: "Green" },
-  ];
+  const [hov, setHov] = useState(false);
+  const tip = KPI_INFO[label];
+  return (
+    <div onClick={onClick}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ background: hov && onClick ? color + "0f" : T.card,
+        border: "1px solid " + (hov && onClick ? color + "66" : T.border),
+        borderRadius: 12, padding: "16px 18px",
+        cursor: onClick ? "pointer" : "default",
+        transition: "all 0.18s", flex: 1, minWidth: 120,
+        position: "relative", overflow: "visible",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+      {onClick && hov && (
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2,
+          background: "linear-gradient(90deg," + color + "00," + color + "99," + color + "00)",
+          borderRadius: "12px 12px 0 0" }} />
+      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 8 }}>
+        <div style={{ fontSize: 9, letterSpacing: 2, color: T.muted,
+          textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{label}</div>
+        {tip && <Tip text={tip} T={T} />}
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 700, color, fontFamily: "DM Mono, monospace", lineHeight: "1" }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: T.muted, fontFamily: "DM Sans, sans-serif", marginTop: 5 }}>{sub}</div>}
+      {onClick && hov && (
+        <div style={{ fontSize: 9, color, marginTop: 6, fontFamily: "DM Sans, sans-serif", letterSpacing: 0.5 }}>
+          VIEW DETAILS →
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── CARD ─── */
+function Card({ children, style, accent, T }: {
+  children: React.ReactNode; style?: React.CSSProperties; accent?: string; T: Theme;
+}) {
+  return (
+    <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: 12,
+      padding: "20px 22px", borderTop: accent ? "2px solid " + accent : "1px solid " + T.border,
+      boxShadow: "0 1px 3px rgba(0,0,0,0.05)", ...style }}>
+      {children}
+    </div>
+  );
+}
+
+/* ─── SECTION LABEL ─── */
+function SLabel({ children, color, T }: { children: React.ReactNode; color?: string; T: Theme }) {
+  return (
+    <div style={{ fontSize: 10, letterSpacing: 2.5, color: color || T.muted,
+      textTransform: "uppercase", fontFamily: "DM Sans, sans-serif",
+      marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ width: 3, height: 14, borderRadius: 2, background: color || T.borderHi }} />
+      {children}
+    </div>
+  );
+}
+
+/* ─── SPINNER ─── */
+function Spin({ size, T }: { size?: number; T: Theme }) {
+  return (
+    <span style={{ width: size || 14, height: size || 14,
+      border: "2px solid " + T.border, borderTopColor: T.accent,
+      borderRadius: "50%", display: "inline-block",
+      animation: "spin 0.7s linear infinite" }} />
+  );
+}
+
+/* ─── CHART TOOLTIP ─── */
+function makeTooltip(T: Theme) {
+  return function CT({ active, payload, label }: any) {
+    if (!active || !payload?.length) return null;
+    const v = payload[0].value;
+    return (
+      <div style={{ background: T.surface, border: "1px solid " + T.borderHi,
+        borderRadius: 8, padding: "8px 12px", boxShadow: "0 4px 20px rgba(0,0,0,0.12)" }}>
+        <div style={{ fontSize: 10, color: T.muted, marginBottom: 3, fontFamily: "DM Sans, sans-serif" }}>{label}</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: v >= 0 ? T.green : T.red,
+          fontFamily: "DM Mono, monospace" }}>{v >= 0 ? "+" : ""}₹{v}</div>
+      </div>
+    );
+  };
+}
+
+/* ─── THEME TOGGLE ─── */
+function ThemeToggle({ current, onChange, T }: { current: ThemeKey; onChange: (k: ThemeKey) => void; T: Theme }) {
   return (
     <div style={{ display: "inline-flex", background: T.bg,
       border: "1px solid " + T.border, borderRadius: 22, padding: 3, gap: 2 }}>
-      {options.map(({ key, icon, label }) => {
+      {([["dark","🌙","Dark"],["warm","🌅","Warm"],["green","🌿","Green"]] as const).map(([key,icon,label]) => {
         const active = current === key;
         return (
           <button key={key} onClick={() => onChange(key)} style={{
-            padding: "4px 10px", borderRadius: 18,
-            fontSize: 11, fontWeight: active ? 700 : 400,
-            border: "none", cursor: active ? "default" : "pointer",
+            padding: "4px 10px", borderRadius: 18, fontSize: 11,
+            fontWeight: active ? 700 : 400, border: "none",
+            cursor: active ? "default" : "pointer",
             background: active ? T.accent : "transparent",
             color: active ? "#fff" : T.muted,
             display: "flex", alignItems: "center", gap: 4,
@@ -186,210 +317,7 @@ function ThemeToggle({ current, onChange, T }: {
   );
 }
 
-/* ─────────────────────────────────────────
-   INFO TIP
-───────────────────────────────────────── */
-function InfoTip({ text, T }: { text: string; T: Theme }) {
-  const [show, setShow] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!show) return;
-    const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setShow(false);
-    };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, [show]);
-  return (
-    <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
-      <button onClick={e => { e.stopPropagation(); setShow(!show); }}
-        style={{ background: "transparent", border: "1px solid " + T.border,
-          borderRadius: "50%", width: 15, height: 15, color: T.muted,
-          fontSize: 8, cursor: "pointer", display: "flex", alignItems: "center",
-          justifyContent: "center", fontWeight: 800, outline: "none", flexShrink: 0 }}>
-        ?
-      </button>
-      {show && (
-        <div style={{ position: "absolute", bottom: "calc(100% + 6px)", left: "50%",
-          transform: "translateX(-50%)", background: T.card,
-          border: "1px solid " + T.borderHi, borderRadius: 8,
-          padding: "8px 12px", fontSize: 11, color: T.text,
-          fontFamily: "DM Sans, sans-serif", lineHeight: "1.5",
-          whiteSpace: "nowrap", zIndex: 200,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
-          {text}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────
-   STRATEGY TAG
-───────────────────────────────────────── */
-function StrategyTag({ name, T }: { name: string; T: Theme }) {
-  const [show, setShow] = useState(false);
-  const info = STRATEGY_INFO[name] || STRATEGY_INFO["Other"];
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!show) return;
-    const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setShow(false);
-    };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, [show]);
-  return (
-    <div ref={ref} style={{ position: "relative" }}>
-      <button onClick={() => setShow(!show)} style={{
-        background: "transparent", border: "none",
-        cursor: "pointer", outline: "none", padding: 0,
-        display: "flex", alignItems: "center", gap: 6 }}>
-        <span style={{ fontSize: 16 }}>{info.icon}</span>
-        <span style={{ fontWeight: 700, fontSize: 15, color: T.text,
-          fontFamily: "DM Sans, sans-serif" }}>{name}</span>
-        <span style={{ fontSize: 11, color: T.muted, opacity: 0.7 }}>ⓘ</span>
-      </button>
-      {show && (
-        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0,
-          background: T.card, border: "1px solid " + T.borderHi,
-          borderRadius: 10, padding: "12px 16px", zIndex: 200, minWidth: 260,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.text,
-            fontFamily: "DM Sans, sans-serif", marginBottom: 4 }}>{info.short}</div>
-          <div style={{ fontSize: 11, color: T.muted,
-            fontFamily: "DM Sans, sans-serif", lineHeight: "1.6" }}>{info.when}</div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────
-   BADGE
-───────────────────────────────────────── */
-function Badge({ status, T }: { status: string; T: Theme }) {
-  const sc = makeStatusConfig(T);
-  const c = sc[status as keyof typeof sc] || { color: T.muted, bg: T.surface, label: status };
-  return (
-    <span style={{ background: c.bg, color: c.color,
-      border: "1px solid " + c.color + "40", borderRadius: 4, fontSize: 9,
-      fontWeight: 700, letterSpacing: 1.5, padding: "2px 7px",
-      fontFamily: "DM Mono, monospace", whiteSpace: "nowrap" }}>
-      {c.label}
-    </span>
-  );
-}
-
-/* ─────────────────────────────────────────
-   KPI CARD
-───────────────────────────────────────── */
-function KPI({ label, value, sub, color, onClick, T }: {
-  label: string; value: string | number; sub?: string;
-  color: string; onClick?: () => void; T: Theme;
-}) {
-  const [hov, setHov] = useState(false);
-  const tip = KPI_INFO[label];
-  return (
-    <div onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{ background: hov && onClick ? color + "0f" : T.card,
-        border: "1px solid " + (hov && onClick ? color + "66" : T.border),
-        borderRadius: 12, padding: "16px 18px",
-        cursor: onClick ? "pointer" : "default",
-        transition: "all 0.18s", flex: 1, minWidth: 120,
-        position: "relative", overflow: "hidden",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-      {onClick && hov && (
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2,
-          background: "linear-gradient(90deg," + color + "00," + color + "99," + color + "00)" }} />
-      )}
-      <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 8 }}>
-        <div style={{ fontSize: 9, letterSpacing: 2, color: T.muted,
-          textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{label}</div>
-        {tip && <InfoTip text={tip} T={T} />}
-      </div>
-      <div style={{ fontSize: 22, fontWeight: 700, color,
-        fontFamily: "DM Mono, monospace", lineHeight: "1" }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: T.muted,
-        fontFamily: "DM Sans, sans-serif", marginTop: 5 }}>{sub}</div>}
-      {onClick && hov && (
-        <div style={{ fontSize: 9, color, marginTop: 6,
-          fontFamily: "DM Sans, sans-serif", letterSpacing: 0.5 }}>
-          VIEW DETAILS →
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────
-   CARD
-───────────────────────────────────────── */
-function Card({ children, style, accent, T }: {
-  children: React.ReactNode; style?: React.CSSProperties; accent?: string; T: Theme;
-}) {
-  return (
-    <div style={{ background: T.card, border: "1px solid " + T.border,
-      borderRadius: 12, padding: "20px 22px",
-      borderTop: accent ? "2px solid " + accent : "1px solid " + T.border,
-      boxShadow: "0 1px 3px rgba(0,0,0,0.05)", ...style }}>
-      {children}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────
-   SECTION LABEL
-───────────────────────────────────────── */
-function SLabel({ children, color, T }: { children: React.ReactNode; color?: string; T: Theme }) {
-  return (
-    <div style={{ fontSize: 10, letterSpacing: 2.5, color: color || T.muted,
-      textTransform: "uppercase", fontFamily: "DM Sans, sans-serif",
-      marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ width: 3, height: 14, borderRadius: 2,
-        background: color || T.borderHi }} />
-      {children}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────
-   SPINNER
-───────────────────────────────────────── */
-function Spinner({ size, T }: { size?: number; T: Theme }) {
-  return (
-    <span style={{ width: size || 14, height: size || 14,
-      border: "2px solid " + T.border,
-      borderTopColor: T.accent, borderRadius: "50%",
-      display: "inline-block", animation: "spin 0.7s linear infinite" }} />
-  );
-}
-
-/* ─────────────────────────────────────────
-   CHART TOOLTIP
-───────────────────────────────────────── */
-function makeTooltip(T: Theme) {
-  return function CT({ active, payload, label }: any) {
-    if (!active || !payload?.length) return null;
-    const v = payload[0].value;
-    return (
-      <div style={{ background: T.surface, border: "1px solid " + T.borderHi,
-        borderRadius: 8, padding: "8px 12px",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.12)" }}>
-        <div style={{ fontSize: 10, color: T.muted, marginBottom: 3,
-          fontFamily: "DM Sans, sans-serif" }}>{label}</div>
-        <div style={{ fontSize: 14, fontWeight: 700, color: v >= 0 ? T.green : T.red,
-          fontFamily: "DM Mono, monospace" }}>{v >= 0 ? "+" : ""}₹{v}</div>
-      </div>
-    );
-  };
-}
-
-/* ─────────────────────────────────────────
-   TRADE ROW
-───────────────────────────────────────── */
+/* ─── TRADE ROW ─── */
 function TradeRow({ trade: t, updating, onAction, mobile, T }: {
   trade: Trade; updating: string | null;
   onAction: (id: string, action: string, name: string) => void;
@@ -397,42 +325,30 @@ function TradeRow({ trade: t, updating, onAction, mobile, T }: {
 }) {
   const [expanded, setExpanded] = useState(false);
   const actions = ACTIONS[t.status] || [];
-  const busy    = updating === t.id;
-  const pnl     = t.finalPnL;
-  const name    = t.tradeName || t.stock || "—";
-  const date    = t.date?.split("T")[0] || t.createdTime?.split("T")[0] || "";
+  const busy = updating === t.id;
+  const pnl  = t.finalPnL;
+  const name = t.tradeName || t.stock || "—";
+  const date = t.date?.split("T")[0] || t.createdTime?.split("T")[0] || "";
 
   if (mobile) {
     return (
-      <div style={{ borderBottom: "1px solid " + T.border, background: "transparent" }}>
-        <div style={{ padding: "14px 16px" }}
-          onClick={() => t.notes && setExpanded(!expanded)}>
-          <div style={{ display: "flex", justifyContent: "space-between",
-            alignItems: "flex-start", marginBottom: 8 }}>
+      <div style={{ borderBottom: "1px solid " + T.border }}>
+        <div style={{ padding: "14px 16px" }} onClick={() => t.notes && setExpanded(!expanded)}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
             <div style={{ flex: 1, paddingRight: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: T.text,
-                fontFamily: "DM Sans, sans-serif", marginBottom: 5 }}>{name}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "DM Sans, sans-serif", marginBottom: 5 }}>{name}</div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <Badge status={t.status} T={T} />
-                <span style={{ fontSize: 10, color: T.dim,
-                  fontFamily: "DM Mono, monospace" }}>{date}</span>
+                <span style={{ fontSize: 10, color: T.dim, fontFamily: "DM Mono, monospace" }}>{date}</span>
               </div>
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>
               {pnl != null
-                ? <div style={{ fontSize: 15, fontWeight: 700,
-                    color: pnl >= 0 ? T.green : T.red,
-                    fontFamily: "DM Mono, monospace" }}>{fmt(pnl)}</div>
-                : t.entryPrice
-                  ? <div style={{ fontSize: 13, color: T.muted,
-                      fontFamily: "DM Mono, monospace" }}>₹{t.entryPrice}</div>
-                  : null
+                ? <div style={{ fontSize: 15, fontWeight: 700, color: pnl >= 0 ? T.green : T.red, fontFamily: "DM Mono, monospace" }}>{fmt(pnl)}</div>
+                : t.entryPrice ? <div style={{ fontSize: 13, color: T.muted, fontFamily: "DM Mono, monospace" }}>₹{t.entryPrice}</div> : null
               }
               {t.stopLoss && pnl == null && (
-                <div style={{ fontSize: 10, color: T.dim, marginTop: 2,
-                  fontFamily: "DM Mono, monospace" }}>
-                  SL {t.stopLoss} · T {t.target}
-                </div>
+                <div style={{ fontSize: 10, color: T.dim, marginTop: 2, fontFamily: "DM Mono, monospace" }}>SL {t.stopLoss} · T {t.target}</div>
               )}
             </div>
           </div>
@@ -442,8 +358,7 @@ function TradeRow({ trade: t, updating, onAction, mobile, T }: {
                 const color = T[key] as string;
                 return (
                   <button key={action}
-                    onClick={e => { e.stopPropagation(); onAction(t.id, action, name); }}
-                    disabled={busy}
+                    onClick={e => { e.stopPropagation(); if (!busy) onAction(t.id, action, name); }}
                     style={{ background: color + "18", border: "1px solid " + color + "50",
                       color, borderRadius: 6, padding: "5px 14px", fontSize: 12,
                       fontWeight: 600, cursor: busy ? "default" : "pointer",
@@ -456,10 +371,8 @@ function TradeRow({ trade: t, updating, onAction, mobile, T }: {
           )}
         </div>
         {expanded && t.notes && (
-          <div style={{ padding: "0 16px 14px 16px",
-            borderTop: "1px solid " + T.border, paddingTop: 10 }}>
-            <div style={{ fontSize: 11, color: T.muted, lineHeight: "1.6",
-              fontFamily: "DM Sans, sans-serif" }}>{t.notes}</div>
+          <div style={{ padding: "0 16px 14px", borderTop: "1px solid " + T.border, paddingTop: 10 }}>
+            <div style={{ fontSize: 11, color: T.muted, lineHeight: "1.6", fontFamily: "DM Sans, sans-serif" }}>{t.notes}</div>
           </div>
         )}
       </div>
@@ -468,8 +381,7 @@ function TradeRow({ trade: t, updating, onAction, mobile, T }: {
 
   return (
     <>
-      <div style={{ display: "grid",
-        gridTemplateColumns: "2fr 100px 90px 90px 90px 60px 90px 1fr",
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 100px 90px 90px 90px 60px 90px 1fr",
         padding: "11px 20px", borderBottom: "1px solid " + T.border,
         alignItems: "center", gap: 8, background: "transparent",
         transition: "background 0.12s", cursor: t.notes ? "pointer" : "default" }}
@@ -477,27 +389,17 @@ function TradeRow({ trade: t, updating, onAction, mobile, T }: {
         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = T.surface; }}
         onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: T.text,
-            fontFamily: "DM Sans, sans-serif", display: "flex", alignItems: "center", gap: 5 }}>
-            {name}
-            {t.notes && <span style={{ fontSize: 9, color: T.dim }}>▾</span>}
+          <div style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "DM Sans, sans-serif",
+            display: "flex", alignItems: "center", gap: 5 }}>
+            {name}{t.notes && <span style={{ fontSize: 9, color: T.dim }}>▾</span>}
           </div>
-          <div style={{ fontSize: 10, color: T.dim,
-            fontFamily: "DM Mono, monospace", marginTop: 2 }}>{date}</div>
+          <div style={{ fontSize: 10, color: T.dim, fontFamily: "DM Mono, monospace", marginTop: 2 }}>{date}</div>
         </div>
         <Badge status={t.status} T={T} />
-        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: T.muted }}>
-          {t.entryPrice ? "₹" + t.entryPrice : "—"}
-        </div>
-        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: T.red + "bb" }}>
-          {t.stopLoss ? "₹" + t.stopLoss : "—"}
-        </div>
-        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: T.green + "bb" }}>
-          {t.target ? "₹" + t.target : "—"}
-        </div>
-        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: T.dim }}>
-          {t.quantity ?? "—"}
-        </div>
+        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: T.muted }}>{t.entryPrice ? "₹" + t.entryPrice : "—"}</div>
+        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: T.red + "bb" }}>{t.stopLoss ? "₹" + t.stopLoss : "—"}</div>
+        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: T.green + "bb" }}>{t.target ? "₹" + t.target : "—"}</div>
+        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: T.dim }}>{t.quantity ?? "—"}</div>
         <div style={{ fontFamily: "DM Mono, monospace", fontSize: 14, fontWeight: 700,
           color: pnl == null ? T.dim : pnl >= 0 ? T.green : T.red }}>
           {pnl == null ? "—" : fmt(pnl)}
@@ -506,24 +408,22 @@ function TradeRow({ trade: t, updating, onAction, mobile, T }: {
           {actions.map(({ action, label, key }) => {
             const color = T[key] as string;
             return (
-              <button key={action} onClick={() => onAction(t.id, action, name)}
-                disabled={busy}
+              <button key={action}
+                onClick={e => { e.stopPropagation(); if (!busy) onAction(t.id, action, name); }}
                 style={{ background: color + "18", border: "1px solid " + color + "50",
                   color, borderRadius: 5, padding: "4px 10px", fontSize: 10,
                   fontWeight: 600, cursor: busy ? "default" : "pointer",
                   fontFamily: "DM Sans, sans-serif", opacity: busy ? 0.5 : 1,
                   transition: "all 0.15s", whiteSpace: "nowrap", outline: "none" }}>
-                {busy ? <Spinner size={10} T={T} /> : label}
+                {busy ? <Spin size={10} T={T} /> : label}
               </button>
             );
           })}
         </div>
       </div>
       {expanded && t.notes && (
-        <div style={{ padding: "10px 20px 14px",
-          background: T.surface, borderBottom: "1px solid " + T.border }}>
-          <div style={{ fontSize: 11, color: T.muted, lineHeight: "1.7",
-            fontFamily: "DM Sans, sans-serif",
+        <div style={{ padding: "10px 20px 14px", background: T.surface, borderBottom: "1px solid " + T.border }}>
+          <div style={{ fontSize: 11, color: T.muted, lineHeight: "1.7", fontFamily: "DM Sans, sans-serif",
             borderLeft: "2px solid " + T.accent + "66", paddingLeft: 12 }}>
             {t.notes}
           </div>
@@ -533,24 +433,30 @@ function TradeRow({ trade: t, updating, onAction, mobile, T }: {
   );
 }
 
-/* ─────────────────────────────────────────
-   HYPOTHESIS BADGE
-───────────────────────────────────────── */
+/* ─── HYPOTHESIS BADGE ─── */
 function HBadge({ status, T }: { status: string; T: Theme }) {
   const s = status.toLowerCase();
-  const color = s.includes("confirm") ? T.green
-    : s.includes("strength") || s.includes("testing") || s.includes("ongoing") ? T.amber
-    : s.includes("hold") ? T.muted : T.purple;
-  const label = s.includes("confirm") ? "CONFIRMED"
-    : s.includes("strength") ? "STRENGTHENING"
-    : s.includes("testing") ? "TESTING"
-    : s.includes("ongoing") ? "ONGOING"
-    : s.includes("hold") ? "ON HOLD" : "ACTIVE";
+  const color = s.includes("confirm") ? T.green : s.includes("strength") || s.includes("testing") || s.includes("ongoing") ? T.amber : s.includes("hold") ? T.muted : T.purple;
+  const label = s.includes("confirm") ? "CONFIRMED" : s.includes("strength") ? "STRENGTHENING" : s.includes("testing") ? "TESTING" : s.includes("ongoing") ? "ONGOING" : s.includes("hold") ? "ON HOLD" : "ACTIVE";
   return (
-    <span style={{ fontSize: 9, color, background: color + "18",
-      border: "1px solid " + color + "40", borderRadius: 4, padding: "2px 7px",
-      fontFamily: "DM Mono, monospace", fontWeight: 700,
-      letterSpacing: 1, whiteSpace: "nowrap" }}>{label}</span>
+    <span style={{ fontSize: 9, color, background: color + "18", border: "1px solid " + color + "40",
+      borderRadius: 4, padding: "2px 7px", fontFamily: "DM Mono, monospace",
+      fontWeight: 700, letterSpacing: 1, whiteSpace: "nowrap" }}>{label}</span>
+  );
+}
+
+/* ─── INSIGHT METRIC ─── */
+function Metric({ label, value, sub, color, T }: {
+  label: string; value: string | number; sub?: string; color: string; T: Theme;
+}) {
+  return (
+    <div style={{ background: T.bg, borderRadius: 10, padding: "12px 14px",
+      border: "1px solid " + T.border }}>
+      <div style={{ fontSize: 8, color: T.dim, letterSpacing: 1.5, textTransform: "uppercase",
+        fontFamily: "DM Sans, sans-serif", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color, fontFamily: "DM Mono, monospace", lineHeight: "1" }}>{value}</div>
+      {sub && <div style={{ fontSize: 10, color: T.muted, fontFamily: "DM Sans, sans-serif", marginTop: 4 }}>{sub}</div>}
+    </div>
   );
 }
 
@@ -561,18 +467,18 @@ export default function Dashboard() {
   const [themeKey, setThemeKey] = useState<ThemeKey>(getDefaultTheme);
   const T = THEMES[themeKey];
 
-  const [trades, setTrades]       = useState<Trade[]>([]);
-  const [fw, setFw]               = useState<Framework | null>(null);
-  const [review, setReview]       = useState<Review | null>(null);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState<string | null>(null);
-  const [filter, setFilter]       = useState("ALL");
-  const [tab, setTab]             = useState("overview");
-  const [synced, setSynced]       = useState<Date | null>(null);
-  const [updating, setUpdating]   = useState<string | null>(null);
-  const [toast, setToast]         = useState<{ msg: string; ok: boolean } | null>(null);
-  const [mobile, setMobile]       = useState(false);
-
+  const [trades, setTrades]     = useState<Trade[]>([]);
+  const [fw, setFw]             = useState<Framework | null>(null);
+  const [review, setReview]     = useState<Review | null>(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [filter, setFilter]     = useState("ALL");
+  const [tab, setTab]           = useState("overview");
+  const [synced, setSynced]     = useState<Date | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [toast, setToast]       = useState<{ msg: string; ok: boolean } | null>(null);
+  const [mobile, setMobile]     = useState(false);
+  const [lgGroup, setLgGroup]   = useState<string | null>(null);
 
   useEffect(() => {
     const check = () => setMobile(window.innerWidth < 768);
@@ -606,16 +512,16 @@ export default function Dashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setToast({ msg: name + " updated", ok: true });
+      setToast({ msg: name + " → " + data.newStatus, ok: true });
       await load();
     } catch (e: any) {
-      setToast({ msg: "Update failed: " + e.message, ok: false });
+      setToast({ msg: "Failed: " + e.message, ok: false });
     }
     setUpdating(null);
     setTimeout(() => setToast(null), 4000);
   };
 
-  /* ── Derived stats ── */
+  /* ── Stats ── */
   const closed   = trades.filter(t => t.status === "⚫ CLOSED");
   const open     = trades.filter(t => ["🟡 PENDING","✅ APPROVED","🔵 EXECUTED"].includes(t.status));
   const wins     = closed.filter(t => (t.finalPnL ?? 0) > 0);
@@ -637,12 +543,9 @@ export default function Dashboard() {
   }
 
   const todayIST    = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
-  const todayTrades = trades.filter(t =>
-    (t.date?.split("T")[0] || t.createdTime?.split("T")[0]) === todayIST);
-  const todayPnL    = todayTrades.filter(t => t.status === "⚫ CLOSED")
-    .reduce((s, t) => s + (t.finalPnL ?? 0), 0);
-  const todayOpen   = todayTrades.filter(t =>
-    ["🟡 PENDING","✅ APPROVED","🔵 EXECUTED"].includes(t.status));
+  const todayTrades = trades.filter(t => (t.date?.split("T")[0] || t.createdTime?.split("T")[0]) === todayIST);
+  const todayPnL    = todayTrades.filter(t => t.status === "⚫ CLOSED").reduce((s, t) => s + (t.finalPnL ?? 0), 0);
+  const todayOpen   = todayTrades.filter(t => ["🟡 PENDING","✅ APPROVED","🔵 EXECUTED"].includes(t.status));
 
   /* ── Chart data ── */
   const dailyMap = closed.reduce((acc: Record<string,number>, t) => {
@@ -650,8 +553,7 @@ export default function Dashboard() {
     acc[d] = (acc[d] || 0) + (t.finalPnL ?? 0);
     return acc;
   }, {});
-  const dailyData = Object.entries(dailyMap)
-    .sort(([a],[b]) => a.localeCompare(b))
+  const dailyData = Object.entries(dailyMap).sort(([a],[b]) => a.localeCompare(b))
     .map(([date, pnl]) => ({ date: date.slice(5), pnl: Math.round(pnl) }));
   let cum = 0;
   const cumData = dailyData.map(d => ({ date: d.date, pnl: (cum += d.pnl, Math.round(cum)) }));
@@ -663,8 +565,7 @@ export default function Dashboard() {
     acc[day] = (acc[day] || 0) + (t.finalPnL ?? 0);
     return acc;
   }, {});
-  const dowData = ["Mon","Tue","Wed","Thu","Fri"]
-    .map(day => ({ day, pnl: Math.round(dowMap[day] || 0) }));
+  const dowData = ["Mon","Tue","Wed","Thu","Fri"].map(day => ({ day, pnl: Math.round(dowMap[day] || 0) }));
 
   const stockMap = closed.reduce((acc: Record<string,{pnl:number;count:number;wins:number}>, t) => {
     const s = t.stock || t.tradeName?.split(" ")[0] || "?";
@@ -674,16 +575,13 @@ export default function Dashboard() {
     return acc;
   }, {});
   const stockData = Object.entries(stockMap)
-    .map(([stock,d]) => ({ stock, pnl: Math.round(d.pnl), count: d.count,
-      wr: Math.round((d.wins / d.count) * 100) }))
+    .map(([stock,d]) => ({ stock, pnl: Math.round(d.pnl), count: d.count, wr: Math.round((d.wins/d.count)*100) }))
     .sort((a,b) => b.pnl - a.pnl).slice(0, 8);
 
   const stratMap = closed.reduce((acc: Record<string,{pnl:number;wins:number;total:number}>, t) => {
     const n = t.tradeName || "";
-    const s = n.includes("ORB") ? "ORB"
-      : n.includes("Mean Reversion") ? "Mean Rev"
-      : n.includes("Momentum") ? "Momentum"
-      : n.includes("Dual Signal") ? "Dual Signal"
+    const s = n.includes("ORB") ? "ORB" : n.includes("Mean Reversion") ? "Mean Rev"
+      : n.includes("Momentum") ? "Momentum" : n.includes("Dual Signal") ? "Dual Signal"
       : n.includes("Crisis") ? "Crisis" : "Other";
     if (!acc[s]) acc[s] = { pnl: 0, wins: 0, total: 0 };
     acc[s].pnl += (t.finalPnL ?? 0); acc[s].total++;
@@ -699,14 +597,46 @@ export default function Dashboard() {
     const r = (t.reason || t.notes || "").toLowerCase();
     const type = r.includes("sl") || r.includes("stop") ? "Stop Loss"
       : r.includes("target") || r.includes("2%") ? "Target Hit"
-      : r.includes("3") || r.includes("deadline") || r.includes("pm") ? "3PM Exit"
-      : "Other";
+      : r.includes("3") || r.includes("deadline") || r.includes("pm") ? "3PM Exit" : "Other";
     acc[type] = (acc[type] || 0) + 1;
     return acc;
   }, {});
-  const exitData = Object.entries(exitMap)
-    .map(([type, count]) => ({ type, count }))
-    .sort((a,b) => b.count - a.count);
+  const exitData = Object.entries(exitMap).map(([type, count]) => ({ type, count })).sort((a,b) => b.count - a.count);
+
+  /* ── Insight metrics ── */
+  const slHits       = closed.filter(t => (t.finalPnL ?? 0) < 0).length;
+  const slRate       = closed.length ? Math.round((slHits / closed.length) * 100) : 0;
+  const grossWin     = wins.reduce((s,t) => s + (t.finalPnL ?? 0), 0);
+  const grossLoss    = Math.abs(losses.reduce((s,t) => s + (t.finalPnL ?? 0), 0));
+  const profitFactor = grossLoss > 0 ? (grossWin / grossLoss).toFixed(2) : "—";
+
+  // Win rate trend — compare first half vs second half of trades
+  const halfIdx    = Math.floor(closed.length / 2);
+  const firstHalf  = closed.slice(0, halfIdx);
+  const secondHalf = closed.slice(halfIdx);
+  const wrFirst    = firstHalf.length ? Math.round(firstHalf.filter(t => (t.finalPnL??0) > 0).length / firstHalf.length * 100) : 0;
+  const wrSecond   = secondHalf.length ? Math.round(secondHalf.filter(t => (t.finalPnL??0) > 0).length / secondHalf.length * 100) : 0;
+  const improving  = wrSecond > wrFirst;
+
+  // Max drawdown
+  let peak = 0, dd = 0, maxDd = 0;
+  cumData.forEach(d => {
+    if (d.pnl > peak) peak = d.pnl;
+    dd = peak - d.pnl;
+    if (dd > maxDd) maxDd = dd;
+  });
+
+  // Daily win rate data
+  const dailyWrData = Object.entries(dailyMap).sort(([a],[b]) => a.localeCompare(b)).map(([date]) => {
+    const dayTrades = closed.filter(t => (t.date?.split("T")[0] || t.createdTime?.split("T")[0]) === date);
+    const w = dayTrades.filter(t => (t.finalPnL??0) > 0).length;
+    return { date: date.slice(5), wr: dayTrades.length ? Math.round(w / dayTrades.length * 100) : 0 };
+  });
+
+  // Progress to 60-day target
+  const daysLogged  = fw?.dayCount || Object.keys(dailyMap).length;
+  const daysTarget  = 60;
+  const daysPct     = Math.min(100, Math.round((daysLogged / daysTarget) * 100));
 
   /* ── Clock ── */
   const now = new Date();
@@ -717,8 +647,7 @@ export default function Dashboard() {
   const urgent  = mktOpen && minsTo3 <= 30 && open.length > 0;
   const istStr  = ist.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 
-  const filtered = filter === "ALL" ? trades
-    : trades.filter(t => t.status?.includes(filter));
+  const filtered = filter === "ALL" ? trades : trades.filter(t => t.status?.includes(filter));
 
   const CT  = makeTooltip(T);
   const cg  = <CartesianGrid strokeDasharray="3 3" stroke={T.border} vertical={false} />;
@@ -729,6 +658,7 @@ export default function Dashboard() {
   const NAV = [
     { key: "overview",     label: "Overview"     },
     { key: "today",        label: "Today"        },
+    { key: "insights",     label: "Insights"     },
     { key: "intelligence", label: "Intelligence" },
     { key: "charts",       label: "Charts"       },
     { key: "stocks",       label: "Stocks"       },
@@ -736,53 +666,36 @@ export default function Dashboard() {
     { key: "log",          label: "Trade Log"    },
   ];
 
-  function navTo(key: string) {
-    setTab(key);
-  }
-
-  /* ── DESKTOP SIDEBAR ── */
+  /* ─── SIDEBAR ─── */
   const Sidebar = () => (
     <div style={{ width: 230, background: T.surface, borderRight: "1px solid " + T.border,
-      display: "flex", flexDirection: "column", height: "100vh",
-      position: "sticky", top: 0, flexShrink: 0 }}>
+      display: "flex", flexDirection: "column", height: "100vh", position: "sticky", top: 0, flexShrink: 0 }}>
 
       <div style={{ padding: "20px 18px 14px", borderBottom: "1px solid " + T.border }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
           <div style={{ width: 30, height: 30, borderRadius: 8,
             background: "linear-gradient(135deg," + T.accent + "33," + T.purple + "22)",
-            border: "1px solid " + T.accent + "44", display: "flex",
-            alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 900, color: T.accent,
-            fontFamily: "DM Mono, monospace" }}>₹</div>
+            border: "1px solid " + T.accent + "44",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 13, fontWeight: 900, color: T.accent, fontFamily: "DM Mono, monospace" }}>₹</div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text,
-              fontFamily: "DM Sans, sans-serif" }}>Trading Desk</div>
-            <div style={{ fontSize: 8, color: T.muted, letterSpacing: 1.5,
-              fontFamily: "DM Mono, monospace" }}>PAPER · NIFTY 100</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, fontFamily: "DM Sans, sans-serif" }}>Trading Desk</div>
+            <div style={{ fontSize: 8, color: T.muted, letterSpacing: 1.5, fontFamily: "DM Mono, monospace" }}>PAPER · NIFTY 100</div>
           </div>
         </div>
         <ThemeToggle current={themeKey} onChange={setThemeKey} T={T} />
       </div>
 
       <div style={{ padding: "10px 18px", borderBottom: "1px solid " + T.border }}>
-        <div style={{ display: "flex", justifyContent: "space-between",
-          alignItems: "center", marginBottom: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 7, height: 7, borderRadius: "50%",
-              background: mktOpen ? T.green : T.red,
-              boxShadow: "0 0 6px " + (mktOpen ? T.green : T.red) }} />
-            <span style={{ fontSize: 11, fontWeight: 700,
-              color: mktOpen ? T.green : T.red,
-              fontFamily: "DM Mono, monospace" }}>
-              {mktOpen ? "LIVE" : "CLOSED"}
-            </span>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: mktOpen ? T.green : T.red, boxShadow: "0 0 6px " + (mktOpen ? T.green : T.red) }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: mktOpen ? T.green : T.red, fontFamily: "DM Mono, monospace" }}>{mktOpen ? "LIVE" : "CLOSED"}</span>
           </div>
-          <span style={{ fontSize: 10, color: T.muted,
-            fontFamily: "DM Mono, monospace" }}>{istStr}</span>
+          <span style={{ fontSize: 10, color: T.muted, fontFamily: "DM Mono, monospace" }}>{istStr}</span>
         </div>
         {mktOpen && (
-          <div style={{ fontSize: 10, color: minsTo3 <= 30 ? T.red : T.amber,
-            fontFamily: "DM Mono, monospace" }}>
+          <div style={{ fontSize: 10, color: minsTo3 <= 30 ? T.red : T.amber, fontFamily: "DM Mono, monospace" }}>
             {Math.floor(minsTo3/60)}h {minsTo3%60}m → 15:00 exit
           </div>
         )}
@@ -793,29 +706,23 @@ export default function Dashboard() {
         {[
           { label: "P&L",    value: fmt(totalPnL), color: totalPnL >= 0 ? T.green : T.red },
           { label: "Win",    value: winRate + "%", color: T.amber },
-          { label: "Streak", value: streak > 0 ? streak + streakType : "—",
-            color: streakType === "W" ? T.green : streakType === "L" ? T.red : T.muted },
-          { label: "Open",   value: open.length,   color: open.length > 0 ? T.accent : T.muted },
+          { label: "Streak", value: streak > 0 ? streak + streakType : "—", color: streakType === "W" ? T.green : streakType === "L" ? T.red : T.muted },
+          { label: "Open",   value: open.length, color: open.length > 0 ? T.accent : T.muted },
         ].map(s => (
-          <div key={s.label} style={{ background: T.card, borderRadius: 7,
-            padding: "7px 10px", border: "1px solid " + T.border }}>
-            <div style={{ fontSize: 7, color: T.dim, letterSpacing: 1.5,
-              textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{s.label}</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: s.color as string,
-              fontFamily: "DM Mono, monospace", marginTop: 2 }}>{s.value}</div>
+          <div key={s.label} style={{ background: T.card, borderRadius: 7, padding: "7px 10px", border: "1px solid " + T.border }}>
+            <div style={{ fontSize: 7, color: T.dim, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{s.label}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: s.color as string, fontFamily: "DM Mono, monospace", marginTop: 2 }}>{s.value}</div>
           </div>
         ))}
       </div>
 
       <nav style={{ flex: 1, padding: "6px 8px", overflowY: "auto" }}>
         {NAV.map(({ key, label }) => (
-          <button key={key} onClick={() => navTo(key)} style={{
+          <button key={key} onClick={() => setTab(key)} style={{
             width: "100%", display: "flex", alignItems: "center", gap: 10,
             padding: "10px 12px", borderRadius: 8, border: "none",
-            background: tab === key
-              ? "linear-gradient(90deg," + T.accent + "18,transparent)" : "transparent",
-            borderLeft: tab === key
-              ? "2px solid " + T.accent : "2px solid transparent",
+            background: tab === key ? "linear-gradient(90deg," + T.accent + "18,transparent)" : "transparent",
+            borderLeft: tab === key ? "2px solid " + T.accent : "2px solid transparent",
             color: tab === key ? T.accent : T.muted,
             cursor: "pointer", marginBottom: 1,
             fontFamily: "DM Sans, sans-serif", fontSize: 14,
@@ -823,19 +730,10 @@ export default function Dashboard() {
             transition: "all 0.15s", textAlign: "left", outline: "none" }}>
             {label}
             {key === "today" && todayOpen.length > 0 && (
-              <span style={{ marginLeft: "auto", background: T.amber,
-                color: themeKey === "dark" ? "#000" : "#fff",
-                borderRadius: 10, fontSize: 9, fontWeight: 800, padding: "1px 6px" }}>
-                {todayOpen.length}
-              </span>
+              <span style={{ marginLeft: "auto", background: T.amber, color: themeKey === "dark" ? "#000" : "#fff", borderRadius: 10, fontSize: 9, fontWeight: 800, padding: "1px 6px" }}>{todayOpen.length}</span>
             )}
             {key === "intelligence" && fw?.rules?.length ? (
-              <span style={{ marginLeft: "auto", background: T.purple + "22",
-                color: T.purple, borderRadius: 10, fontSize: 9,
-                fontWeight: 800, padding: "1px 6px",
-                border: "1px solid " + T.purple + "33" }}>
-                {fw.rules.length}
-              </span>
+              <span style={{ marginLeft: "auto", background: T.purple + "22", color: T.purple, borderRadius: 10, fontSize: 9, fontWeight: 800, padding: "1px 6px", border: "1px solid " + T.purple + "33" }}>{fw.rules.length}</span>
             ) : null}
           </button>
         ))}
@@ -844,8 +742,7 @@ export default function Dashboard() {
       <div style={{ padding: "10px 14px", borderTop: "1px solid " + T.border }}>
         <button onClick={load} disabled={loading} style={{
           width: "100%",
-          background: loading ? T.border
-            : "linear-gradient(135deg," + T.accent + "18," + T.purple + "12)",
+          background: loading ? T.border : "linear-gradient(135deg," + T.accent + "18," + T.purple + "12)",
           border: "1px solid " + (loading ? T.border : T.accent + "44"),
           borderRadius: 8, color: loading ? T.muted : T.accent,
           padding: "9px", fontSize: 12, fontWeight: 600,
@@ -853,11 +750,10 @@ export default function Dashboard() {
           fontFamily: "DM Sans, sans-serif",
           display: "flex", alignItems: "center", justifyContent: "center",
           gap: 8, outline: "none" }}>
-          {loading ? <Spinner T={T} /> : "↻"} {loading ? "Syncing..." : "Refresh"}
+          {loading ? <Spin T={T} /> : "↻"} {loading ? "Syncing..." : "Refresh"}
         </button>
         {synced && (
-          <div style={{ fontSize: 9, color: T.dim, textAlign: "center",
-            marginTop: 6, fontFamily: "DM Mono, monospace" }}>
+          <div style={{ fontSize: 9, color: T.dim, textAlign: "center", marginTop: 6, fontFamily: "DM Mono, monospace" }}>
             {synced.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })} IST
           </div>
         )}
@@ -865,62 +761,51 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── MOBILE HEADER ── */
+  /* ─── MOBILE HEADER + TOP TAB BAR ─── */
   const MobileHeader = () => (
     <div style={{ background: T.surface, borderBottom: "1px solid " + T.border,
       position: "sticky", top: 0, zIndex: 30 }}>
-      {/* Top bar — logo, clock, theme, refresh */}
-      <div style={{ padding: "11px 16px", display: "flex", alignItems: "center",
-        justifyContent: "space-between" }}>
+      <div style={{ padding: "11px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 24, height: 24, borderRadius: 6,
             background: "linear-gradient(135deg," + T.accent + "33," + T.purple + "22)",
             border: "1px solid " + T.accent + "44",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 10, fontWeight: 900, color: T.accent,
-            fontFamily: "DM Mono, monospace" }}>₹</div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: T.text,
-            fontFamily: "DM Sans, sans-serif" }}>Trading Desk</span>
+            fontSize: 10, fontWeight: 900, color: T.accent, fontFamily: "DM Mono, monospace" }}>₹</div>
+          <span style={{ fontSize: 12, fontWeight: 700, color: T.text, fontFamily: "DM Sans, sans-serif" }}>Trading Desk</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <ThemeToggle current={themeKey} onChange={setThemeKey} T={T} />
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%",
-              background: mktOpen ? T.green : T.red }} />
-            <span style={{ fontSize: 9, color: mktOpen ? T.green : T.red,
-              fontFamily: "DM Mono, monospace", fontWeight: 700 }}>{istStr}</span>
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: mktOpen ? T.green : T.red }} />
+            <span style={{ fontSize: 9, color: mktOpen ? T.green : T.red, fontFamily: "DM Mono, monospace", fontWeight: 700 }}>{istStr}</span>
           </div>
           <button onClick={load} disabled={loading} style={{
             background: "transparent", border: "1px solid " + T.border,
             borderRadius: 6, color: T.accent, padding: "4px 8px",
             fontSize: 11, cursor: "pointer", outline: "none" }}>
-            {loading ? <Spinner T={T} /> : "↻"}
+            {loading ? <Spin T={T} /> : "↻"}
           </button>
         </div>
       </div>
-      {/* Tab bar */}
-      <div style={{ display: "flex", borderTop: "1px solid " + T.border,
-        overflowX: "auto", scrollbarWidth: "none" }}>
+      <div style={{ display: "flex", borderTop: "1px solid " + T.border, overflowX: "auto", scrollbarWidth: "none" }}>
         {NAV.map(({ key, label }) => (
-          <button key={key} onClick={() => navTo(key)} style={{
+          <button key={key} onClick={() => setTab(key)} style={{
             flex: "0 0 auto", padding: "9px 14px", border: "none",
             background: "transparent",
             color: tab === key ? T.accent : T.muted,
             cursor: "pointer",
-            borderBottom: tab === key
-              ? "2px solid " + T.accent : "2px solid transparent",
+            borderBottom: tab === key ? "2px solid " + T.accent : "2px solid transparent",
             transition: "all 0.15s", outline: "none",
-            fontFamily: "DM Sans, sans-serif",
-            fontSize: 12, fontWeight: tab === key ? 700 : 400,
+            fontFamily: "DM Sans, sans-serif", fontSize: 12,
+            fontWeight: tab === key ? 700 : 400,
             whiteSpace: "nowrap", position: "relative" }}>
             {label}
             {key === "today" && todayOpen.length > 0 && (
-              <span style={{ position: "absolute", top: 4, right: 4,
-                background: T.amber,
+              <span style={{ position: "absolute", top: 4, right: 4, background: T.amber,
                 color: themeKey === "dark" ? "#000" : "#fff",
                 borderRadius: "50%", fontSize: 7, fontWeight: 800,
-                width: 13, height: 13, display: "flex",
-                alignItems: "center", justifyContent: "center" }}>
+                width: 13, height: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {todayOpen.length}
               </span>
             )}
@@ -930,138 +815,70 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── CONTENT ── */
+  /* ─── CONTENT ─── */
   const Content = () => (
-    <div style={{ flex: 1, overflowY: "auto",
-      padding: mobile ? "16px" : "28px 32px" }}>
+    <div style={{ flex: 1, overflowY: "auto", padding: mobile ? "16px" : "28px 32px" }}>
       {error && (
-        <div style={{ background: T.redBg, border: "1px solid " + T.red,
-          borderRadius: 10, padding: "11px 16px", marginBottom: 20,
-          color: T.red, fontSize: 12, fontFamily: "DM Sans, sans-serif" }}>
+        <div style={{ background: T.redBg, border: "1px solid " + T.red, borderRadius: 10,
+          padding: "11px 16px", marginBottom: 20, color: T.red, fontSize: 12, fontFamily: "DM Sans, sans-serif" }}>
           ⚠ {error}
         </div>
       )}
 
-      {/* ── OVERVIEW ── */}
+      {/* ─── OVERVIEW ─── */}
       {tab === "overview" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={{ display: "grid",
-            gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(5, 1fr)", gap: 12 }}>
-            <KPI T={T} label="Total P&L" value={fmt(totalPnL)}
-              sub={closed.length + " closed"}
-              color={totalPnL >= 0 ? T.green : T.red}
-              onClick={() => navTo("charts")} />
-            <KPI T={T} label="Win Rate" value={winRate + "%"}
-              sub={wins.length + "W · " + losses.length + "L"}
-              color={winRate >= 55 ? T.green : winRate >= 40 ? T.amber : T.red}
-              onClick={() => navTo("strategy")} />
-            <KPI T={T} label="Profit Factor" value={pf}
-              sub={"Avg W ₹" + avgWin.toFixed(0)}
-              color={T.purple}
-              onClick={() => navTo("strategy")} />
-            <KPI T={T} label="Streak"
-              value={streak > 0 ? streak + " " + (streakType === "W" ? "Wins" : "Losses") : "—"}
-              sub={streak > 0 ? "Current " + (streakType === "W" ? "win" : "loss") + " run" : "No data"}
-              color={streakType === "W" ? T.green : streakType === "L" ? T.red : T.muted} />
-            <KPI T={T} label="Open Now" value={open.length}
-              sub="Need action"
-              color={open.length > 0 ? T.accent : T.muted}
-              onClick={() => navTo("today")} />
+          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(5, 1fr)", gap: 12 }}>
+            <KPI T={T} label="Total P&L" value={fmt(totalPnL)} sub={closed.length + " closed"} color={totalPnL >= 0 ? T.green : T.red} onClick={() => setTab("charts")} />
+            <KPI T={T} label="Win Rate" value={winRate + "%"} sub={wins.length + "W · " + losses.length + "L"} color={winRate >= 55 ? T.green : winRate >= 40 ? T.amber : T.red} onClick={() => setTab("strategy")} />
+            <KPI T={T} label="Profit Factor" value={pf} sub={"Avg W ₹" + avgWin.toFixed(0)} color={T.purple} onClick={() => setTab("strategy")} />
+            <KPI T={T} label="Streak" value={streak > 0 ? streak + " " + (streakType === "W" ? "Wins" : "Losses") : "—"} sub={streak > 0 ? "Current " + (streakType === "W" ? "win" : "loss") + " run" : "No data"} color={streakType === "W" ? T.green : streakType === "L" ? T.red : T.muted} />
+            <KPI T={T} label="Open Now" value={open.length} sub="Need action" color={open.length > 0 ? T.accent : T.muted} onClick={() => setTab("today")} />
           </div>
 
-          <div style={{ display: "grid",
-            gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
             <Card T={T} accent={T.green}>
               <SLabel color={T.green} T={T}>Win / Loss Breakdown</SLabel>
-              <div style={{ height: 10, borderRadius: 5, overflow: "hidden",
-                background: T.bg, display: "flex", marginBottom: 12 }}>
-                <div style={{ width: winRate + "%",
-                  background: "linear-gradient(90deg," + T.green + ",#059669)",
-                  transition: "width 1.2s ease" }} />
-                <div style={{ flex: 1,
-                  background: "linear-gradient(90deg," + T.red + ",#dc2626)" }} />
+              <div style={{ height: 10, borderRadius: 5, overflow: "hidden", background: T.bg, display: "flex", marginBottom: 12 }}>
+                <div style={{ width: winRate + "%", background: "linear-gradient(90deg," + T.green + ",#059669)", transition: "width 1.2s ease" }} />
+                <div style={{ flex: 1, background: "linear-gradient(90deg," + T.red + ",#dc2626)" }} />
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between",
-                marginBottom: 16 }}>
-                <span style={{ color: T.green, fontWeight: 700, fontSize: 13,
-                  fontFamily: "DM Mono, monospace" }}>
-                  {wins.length} wins ({winRate}%)
-                </span>
-                <span style={{ color: T.red, fontWeight: 700, fontSize: 13,
-                  fontFamily: "DM Mono, monospace" }}>
-                  {losses.length} losses
-                </span>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                <span style={{ color: T.green, fontWeight: 700, fontSize: 13, fontFamily: "DM Mono, monospace" }}>{wins.length} wins ({winRate}%)</span>
+                <span style={{ color: T.red, fontWeight: 700, fontSize: 13, fontFamily: "DM Mono, monospace" }}>{losses.length} losses</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {[
-                  ["Best",     "+₹" + best.toFixed(0),            T.green],
-                  ["Worst",    "₹" + worst.toFixed(0),             T.red  ],
-                  ["Avg Win",  "+₹" + avgWin.toFixed(0),           T.green],
-                  ["Avg Loss", "₹" + Math.abs(avgLoss).toFixed(0), T.red  ],
-                ].map(([l,v,c]) => (
-                  <div key={l as string} style={{ background: T.bg, borderRadius: 8,
-                    padding: "8px 12px", border: "1px solid " + T.border }}>
-                    <div style={{ fontSize: 9, color: T.dim, letterSpacing: 1.5,
-                      textTransform: "uppercase",
-                      fontFamily: "DM Sans, sans-serif" }}>{l}</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: c as string,
-                      fontFamily: "DM Mono, monospace", marginTop: 3 }}>{v}</div>
+                {[["Best","+₹"+best.toFixed(0),T.green],["Worst","₹"+worst.toFixed(0),T.red],["Avg Win","+₹"+avgWin.toFixed(0),T.green],["Avg Loss","₹"+Math.abs(avgLoss).toFixed(0),T.red]].map(([l,v,c]) => (
+                  <div key={l as string} style={{ background: T.bg, borderRadius: 8, padding: "8px 12px", border: "1px solid " + T.border }}>
+                    <div style={{ fontSize: 9, color: T.dim, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{l}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: c as string, fontFamily: "DM Mono, monospace", marginTop: 3 }}>{v}</div>
                   </div>
                 ))}
               </div>
             </Card>
-
             <Card T={T} accent={T.accent}>
               <SLabel color={T.accent} T={T}>Latest Session</SLabel>
               {review?.summary
                 ? <>
-                    <div style={{ fontSize: 12, color: T.text, lineHeight: "1.8",
-                      fontFamily: "DM Sans, sans-serif",
-                      borderLeft: "2px solid " + T.accent + "55",
-                      paddingLeft: 12, marginBottom: 12 }}>
-                      {review.summary.slice(0, 260)}
-                      {review.summary.length > 260 ? "..." : ""}
+                    <div style={{ fontSize: 12, color: T.text, lineHeight: "1.8", fontFamily: "DM Sans, sans-serif", borderLeft: "2px solid " + T.accent + "55", paddingLeft: 12, marginBottom: 12 }}>
+                      {review.summary.slice(0, 260)}{review.summary.length > 260 ? "..." : ""}
                     </div>
-                    <div style={{ fontSize: 9, color: T.dim,
-                      fontFamily: "DM Mono, monospace" }}>
-                      {review.title} · {review.date}
-                    </div>
+                    <div style={{ fontSize: 9, color: T.dim, fontFamily: "DM Mono, monospace" }}>{review.title} · {review.date}</div>
                   </>
-                : <div style={{ color: T.dim, fontSize: 12,
-                    fontFamily: "DM Sans, sans-serif" }}>
-                    No session review found. Tap Refresh.
-                  </div>
+                : <div style={{ color: T.dim, fontSize: 12, fontFamily: "DM Sans, sans-serif" }}>No session review found. Tap Refresh.</div>
               }
             </Card>
           </div>
 
           <Card T={T}>
             <SLabel T={T}>System Parameters</SLabel>
-            <div style={{ display: "grid",
-              gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 10 }}>
-              {[
-                ["₹", "Capital / Trade", "₹2,000",   T.amber ],
-                ["↓", "Stop Loss",       "1% below",  T.red   ],
-                ["↑", "Target",          "2% above",  T.green ],
-                ["⏱", "Exit Deadline",  "15:00 IST", T.accent],
-                ["◈", "Strategy",        "ORB + MR",  T.purple],
-                ["◎", "Universe",        "Nifty 100", T.muted ],
-              ].map(([icon, label, val, color]) => (
-                <div key={label as string} style={{ background: T.bg, borderRadius: 8,
-                  padding: "11px 14px", border: "1px solid " + T.border,
-                  display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 6,
-                    background: (color as string) + "18",
-                    border: "1px solid " + (color as string) + "30",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 12, color: color as string, flexShrink: 0,
-                    fontFamily: "DM Mono, monospace", fontWeight: 700 }}>{icon}</div>
+            <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 10 }}>
+              {[["₹","Capital / Trade","₹2,000",T.amber],["↓","Stop Loss","1% below",T.red],["↑","Target","2% above",T.green],["⏱","Exit Deadline","15:00 IST",T.accent],["◈","Strategy","ORB + MR",T.purple],["◎","Universe","Nifty 100",T.muted]].map(([icon,label,val,color]) => (
+                <div key={label as string} style={{ background: T.bg, borderRadius: 8, padding: "11px 14px", border: "1px solid " + T.border, display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 6, background: (color as string)+"18", border: "1px solid "+(color as string)+"30", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: color as string, flexShrink: 0, fontFamily: "DM Mono, monospace", fontWeight: 700 }}>{icon}</div>
                   <div>
-                    <div style={{ fontSize: 8, color: T.dim, letterSpacing: 1.5,
-                      textTransform: "uppercase",
-                      fontFamily: "DM Sans, sans-serif" }}>{label}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: color as string,
-                      fontFamily: "DM Mono, monospace", marginTop: 2 }}>{val}</div>
+                    <div style={{ fontSize: 8, color: T.dim, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{label}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: color as string, fontFamily: "DM Mono, monospace", marginTop: 2 }}>{val}</div>
                   </div>
                 </div>
               ))}
@@ -1070,110 +887,274 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── TODAY ── */}
+      {/* ─── TODAY ─── */}
       {tab === "today" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ display: "grid",
-            gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 12 }}>
-            <KPI T={T} label="Today P&L" value={fmt(todayPnL)}
-              sub={todayTrades.filter(t => t.status === "⚫ CLOSED").length + " closed"}
-              color={todayPnL >= 0 ? T.green : T.red} />
-            <KPI T={T} label="Needs Action" value={todayOpen.length}
-              sub="Pending/Approved/Executed"
-              color={todayOpen.length > 0 ? T.amber : T.muted} />
-            <KPI T={T} label="Total Today" value={todayTrades.length}
-              sub="All trades logged" color={T.accent} />
+          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 12 }}>
+            <KPI T={T} label="Today P&L" value={fmt(todayPnL)} sub={todayTrades.filter(t => t.status === "⚫ CLOSED").length + " closed"} color={todayPnL >= 0 ? T.green : T.red} />
+            <KPI T={T} label="Needs Action" value={todayOpen.length} sub="Pending/Approved/Executed" color={todayOpen.length > 0 ? T.amber : T.muted} />
+            <KPI T={T} label="Total Today" value={todayTrades.length} sub="All trades logged" color={T.accent} />
           </div>
           {todayTrades.length === 0
             ? <Card T={T} style={{ padding: 48, textAlign: "center" }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
-                <div style={{ color: T.muted, fontSize: 13,
-                  fontFamily: "DM Sans, sans-serif" }}>
-                  No trades logged today yet.
-                </div>
+                <div style={{ color: T.muted, fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No trades logged today yet.</div>
               </Card>
             : <Card T={T} style={{ padding: 0, overflow: "hidden" }}>
-                <div style={{ padding: "12px 20px",
-                  borderBottom: "1px solid " + T.border, background: T.bg }}>
+                <div style={{ padding: "12px 20px", borderBottom: "1px solid " + T.border, background: T.bg }}>
                   <SLabel T={T}>Today&apos;s Trades</SLabel>
                 </div>
                 {todayTrades.map(t => (
-                  <TradeRow key={t.id} trade={t} updating={updating}
-                    onAction={updateStatus} mobile={mobile} T={T} />
+                  <TradeRow key={t.id} trade={t} updating={updating} onAction={updateStatus} mobile={mobile} T={T} />
                 ))}
               </Card>
           }
         </div>
       )}
 
-      {/* ── INTELLIGENCE ── */}
+      {/* ─── INSIGHTS ─── */}
+      {tab === "insights" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* Progress to phase 2 */}
+          <Card T={T} accent={T.accent}>
+            <SLabel color={T.accent} T={T}>Phase 2 Progress</SLabel>
+            <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
+              <Metric T={T} label="Days Logged" value={daysLogged} sub={"of " + daysTarget + " target"} color={T.accent} />
+              <Metric T={T} label="Win Rate" value={winRate + "%"} sub={winRate >= 55 ? "✓ target met" : "need 55%"} color={winRate >= 55 ? T.green : T.amber} />
+              <Metric T={T} label="Trend" value={closed.length >= 4 ? (improving ? "↑ Improving" : "↓ Declining") : "—"} sub={closed.length >= 4 ? (wrFirst + "% → " + wrSecond + "%") : "need more data"} color={improving ? T.green : T.red} />
+              <Metric T={T} label="Profit Factor" value={profitFactor} sub="target: 1.5+" color={parseFloat(profitFactor as string) >= 1.5 ? T.green : T.amber} />
+            </div>
+            <div style={{ marginBottom: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontSize: 11, color: T.text, fontFamily: "DM Sans, sans-serif" }}>Days progress ({daysLogged}/{daysTarget})</span>
+                <span style={{ fontSize: 11, color: T.accent, fontWeight: 700, fontFamily: "DM Mono, monospace" }}>{daysPct}%</span>
+              </div>
+              <div style={{ height: 8, borderRadius: 4, background: T.bg, overflow: "hidden" }}>
+                <div style={{ width: daysPct + "%", height: "100%", borderRadius: 4,
+                  background: "linear-gradient(90deg," + T.accent + "," + T.purple + ")",
+                  transition: "width 1s ease" }} />
+              </div>
+            </div>
+          </Card>
+
+          {/* Risk metrics */}
+          <Card T={T} accent={T.red}>
+            <SLabel color={T.red} T={T}>Risk Metrics</SLabel>
+            <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 10 }}>
+              <Metric T={T} label="SL Hit Rate" value={slRate + "%"} sub={slHits + " of " + closed.length + " trades"} color={slRate < 40 ? T.green : T.red} />
+              <Metric T={T} label="Max Drawdown" value={"₹" + maxDd.toFixed(0)} sub="peak to trough" color={maxDd > 200 ? T.red : T.amber} />
+              <Metric T={T} label="Avg Loss" value={"₹" + Math.abs(avgLoss).toFixed(0)} sub="per losing trade" color={T.red} />
+              <Metric T={T} label="Avg Win" value={"₹" + avgWin.toFixed(0)} sub={"ratio " + (Math.abs(avgLoss) > 0 ? (avgWin / Math.abs(avgLoss)).toFixed(1) : "—") + ":1"} color={T.green} />
+            </div>
+          </Card>
+
+          {/* Win rate by day */}
+          {dailyWrData.length > 0 && (
+            <Card T={T}>
+              <SLabel color={T.purple} T={T}>Win Rate by Session</SLabel>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={dailyWrData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
+                  {cg}
+                  <XAxis dataKey="date" {...xAP} />
+                  <YAxis domain={[0,100]} {...yAP} />
+                  <Tooltip content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    return (
+                      <div style={{ background: T.surface, border: "1px solid " + T.borderHi, borderRadius: 8, padding: "8px 12px" }}>
+                        <div style={{ fontSize: 10, color: T.muted, fontFamily: "DM Sans, sans-serif" }}>{label}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: T.purple, fontFamily: "DM Mono, monospace" }}>{payload[0].value}% win rate</div>
+                      </div>
+                    );
+                  }} cursor={{ fill: T.border + "55" }} />
+                  <Bar dataKey="wr" radius={[3,3,0,0]}>
+                    {dailyWrData.map((e,i) => (
+                      <Cell key={i} fill={e.wr >= 55 ? T.green : e.wr >= 33 ? T.amber : T.red} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 8 }}>
+                {[[T.green,"≥55% (target"],[T.amber,"33–54%"],[T.red,"<33%"]].map(([c,l]) => (
+                  <div key={l as string} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: c as string }} />
+                    <span style={{ fontSize: 10, color: T.muted, fontFamily: "DM Sans, sans-serif" }}>{l}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Strategy scorecard */}
+          {Object.keys(stratMap).length > 0 && (
+            <Card T={T}>
+              <SLabel color={T.amber} T={T}>Strategy Scorecard</SLabel>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {Object.entries(stratMap).sort(([,a],[,b]) => b.pnl - a.pnl).map(([name, d]) => {
+                  const wr = Math.round((d.wins / d.total) * 100);
+                  const info = STRATEGY_INFO[name] || STRATEGY_INFO["Other"];
+                  return (
+                    <div key={name} style={{ display: "grid", gridTemplateColumns: "120px 1fr 80px 80px 70px",
+                      alignItems: "center", gap: 10, padding: "10px 14px",
+                      background: T.bg, borderRadius: 8, border: "1px solid " + T.border }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span>{info.icon}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: T.text, fontFamily: "DM Sans, sans-serif" }}>{name}</span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 3, overflow: "hidden", background: T.surface, display: "flex" }}>
+                        <div style={{ width: wr + "%", background: wr >= 55 ? T.green : wr >= 40 ? T.amber : T.red }} />
+                      </div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: wr >= 55 ? T.green : wr >= 40 ? T.amber : T.red, fontFamily: "DM Mono, monospace", textAlign: "right" }}>{wr}% WR</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: d.pnl >= 0 ? T.green : T.red, fontFamily: "DM Mono, monospace", textAlign: "right" }}>{d.pnl >= 0 ? "+" : ""}₹{d.pnl.toFixed(0)}</div>
+                      <div style={{ fontSize: 10, color: T.muted, fontFamily: "DM Mono, monospace", textAlign: "right" }}>{d.total} trades</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
+
+          {/* Best/worst stocks */}
+          {stockData.length > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+              <Card T={T} accent={T.green}>
+                <SLabel color={T.green} T={T}>Best Stocks</SLabel>
+                {stockData.filter(s => s.pnl > 0).slice(0,5).map(s => (
+                  <div key={s.stock} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid " + T.border }}>
+                    <div>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: T.text, fontFamily: "DM Mono, monospace" }}>{s.stock}</span>
+                      <span style={{ fontSize: 10, color: T.muted, fontFamily: "DM Sans, sans-serif", marginLeft: 8 }}>{s.count} trade{s.count > 1 ? "s" : ""}</span>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: T.green, fontFamily: "DM Mono, monospace" }}>+₹{s.pnl}</div>
+                      <div style={{ fontSize: 10, color: T.muted, fontFamily: "DM Mono, monospace" }}>{s.wr}% WR</div>
+                    </div>
+                  </div>
+                ))}
+              </Card>
+              <Card T={T} accent={T.red}>
+                <SLabel color={T.red} T={T}>Worst Stocks</SLabel>
+                {[...stockData].filter(s => s.pnl < 0).sort((a,b) => a.pnl - b.pnl).slice(0,5).map(s => (
+                  <div key={s.stock} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid " + T.border }}>
+                    <div>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: T.text, fontFamily: "DM Mono, monospace" }}>{s.stock}</span>
+                      <span style={{ fontSize: 10, color: T.muted, fontFamily: "DM Sans, sans-serif", marginLeft: 8 }}>{s.count} trade{s.count > 1 ? "s" : ""}</span>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: T.red, fontFamily: "DM Mono, monospace" }}>₹{s.pnl}</div>
+                      <div style={{ fontSize: 10, color: T.muted, fontFamily: "DM Mono, monospace" }}>{s.wr}% WR</div>
+                    </div>
+                  </div>
+                ))}
+              </Card>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── INTELLIGENCE ─── */}
       {tab === "intelligence" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {fw ? (
             <>
-              <div style={{ display: "grid",
-                gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 12 }}>
-                <KPI T={T} label="Trading Days"  value={fw.dayCount}          sub="Sessions logged"   color={T.accent}  />
-                <KPI T={T} label="Active Rules"  value={fw.rules.length}      sub="Governing system"  color={T.purple}  />
-                <KPI T={T} label="Learnings"     value={fw.learnings.length}  sub="Captured insights" color={T.green}   />
-                <KPI T={T} label="Hypotheses"    value={fw.hypotheses.length} sub="Being tested"      color={T.amber}   />
+              <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 12 }}>
+                <KPI T={T} label="Trading Days" value={fw.dayCount} sub="Sessions logged" color={T.accent} />
+                <KPI T={T} label="Active Rules" value={fw.rules.length} sub="Governing system" color={T.purple} />
+                <KPI T={T} label="Learnings" value={fw.learnings.length} sub="Captured insights" color={T.green} />
+                <KPI T={T} label="Hypotheses" value={fw.hypotheses.length} sub="Being tested" color={T.amber} />
               </div>
+
               {fw.rules.length > 0 && (
                 <Card T={T} accent={T.purple}>
                   <SLabel color={T.purple} T={T}>Active Rules</SLabel>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     {fw.rules.map((r, i) => (
-                      <div key={i} style={{ display: "flex", gap: 12,
-                        padding: "10px 14px", background: T.bg,
-                        borderRadius: 8, border: "1px solid " + T.border,
-                        alignItems: "flex-start" }}>
-                        <span style={{ fontSize: 10, fontWeight: 800,
-                          color: T.purple, fontFamily: "DM Mono, monospace",
-                          minWidth: 28, paddingTop: 1, flexShrink: 0 }}>{r.id}</span>
-                        <span style={{ fontSize: 12, color: T.text, flex: 1,
-                          fontFamily: "DM Sans, sans-serif",
-                          lineHeight: "1.6" }}>{r.text}</span>
+                      <div key={i} style={{ display: "flex", gap: 12, padding: "10px 14px", background: T.bg, borderRadius: 8, border: "1px solid " + T.border, alignItems: "flex-start" }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: T.purple, fontFamily: "DM Mono, monospace", minWidth: 28, paddingTop: 1, flexShrink: 0 }}>{r.id}</span>
+                        <span style={{ fontSize: 12, color: T.text, flex: 1, fontFamily: "DM Sans, sans-serif", lineHeight: "1.6" }}>{r.text}</span>
                       </div>
                     ))}
                   </div>
                 </Card>
               )}
+
+              {/* Learnings grouped */}
               {fw.learnings.length > 0 && (
                 <Card T={T} accent={T.green}>
-                  <SLabel color={T.green} T={T}>Recent Learnings</SLabel>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {[...fw.learnings].reverse().map((l, i) => (
-                      <div key={i} style={{ display: "flex", gap: 12,
-                        padding: "10px 14px", background: T.bg,
-                        borderRadius: 8, border: "1px solid " + T.border,
-                        alignItems: "flex-start" }}>
-                        <span style={{ fontSize: 10, fontWeight: 800,
-                          color: T.green, fontFamily: "DM Mono, monospace",
-                          minWidth: 28, paddingTop: 1, flexShrink: 0 }}>{l.id}</span>
-                        <span style={{ fontSize: 12, color: T.text, flex: 1,
-                          fontFamily: "DM Sans, sans-serif",
-                          lineHeight: "1.6" }}>{l.text}</span>
-                      </div>
+                  <SLabel color={T.green} T={T}>Learnings by Theme</SLabel>
+
+                  {/* Group filter pills */}
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                    <button onClick={() => setLgGroup(null)} style={{
+                      padding: "4px 12px", borderRadius: 16, fontSize: 11,
+                      fontWeight: lgGroup === null ? 700 : 400, border: "none",
+                      cursor: "pointer", outline: "none",
+                      background: lgGroup === null ? T.accent : T.bg,
+                      color: lgGroup === null ? "#fff" : T.muted,
+                      transition: "all 0.2s" }}>
+                      All
+                    </button>
+                    {LEARNING_GROUPS.map(g => (
+                      <button key={g.label} onClick={() => setLgGroup(lgGroup === g.label ? null : g.label)} style={{
+                        padding: "4px 12px", borderRadius: 16, fontSize: 11,
+                        fontWeight: lgGroup === g.label ? 700 : 400, border: "none",
+                        cursor: "pointer", outline: "none",
+                        background: lgGroup === g.label ? g.color : T.bg,
+                        color: lgGroup === g.label ? "#fff" : T.muted,
+                        border: "1px solid " + (lgGroup === g.label ? g.color : T.border),
+                        transition: "all 0.2s" }}>
+                        {g.label}
+                      </button>
                     ))}
                   </div>
+
+                  {/* Grouped learnings */}
+                  {LEARNING_GROUPS.filter(g => lgGroup === null || g.label === lgGroup).map(group => {
+                    const groupLearnings = fw.learnings.filter(l => group.ids.includes(l.id));
+                    if (groupLearnings.length === 0) return null;
+                    return (
+                      <div key={group.label} style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: group.color,
+                          letterSpacing: 1.5, textTransform: "uppercase",
+                          fontFamily: "DM Sans, sans-serif", marginBottom: 8,
+                          display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 3, height: 12, borderRadius: 2, background: group.color }} />
+                          {group.label}
+                          <span style={{ background: group.color + "22", color: group.color,
+                            borderRadius: 8, fontSize: 9, fontWeight: 800, padding: "1px 6px",
+                            border: "1px solid " + group.color + "33" }}>
+                            {groupLearnings.length}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                          {groupLearnings.map((l, i) => (
+                            <div key={i} style={{ display: "flex", gap: 12, padding: "9px 12px",
+                              background: T.bg, borderRadius: 8, border: "1px solid " + T.border,
+                              borderLeft: "3px solid " + group.color + "66",
+                              alignItems: "flex-start" }}>
+                              <span style={{ fontSize: 10, fontWeight: 800, color: group.color,
+                                fontFamily: "DM Mono, monospace", minWidth: 24,
+                                paddingTop: 1, flexShrink: 0 }}>{l.id}</span>
+                              <span style={{ fontSize: 12, color: T.text, flex: 1,
+                                fontFamily: "DM Sans, sans-serif", lineHeight: "1.6" }}>{l.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </Card>
               )}
+
               {fw.hypotheses.length > 0 && (
                 <Card T={T} accent={T.amber}>
                   <SLabel color={T.amber} T={T}>Hypothesis Tracker</SLabel>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {fw.hypotheses.map((h, i) => (
-                      <div key={i} style={{ display: "flex", gap: 12,
-                        padding: "12px 14px", background: T.bg,
-                        borderRadius: 8, border: "1px solid " + T.border,
-                        alignItems: "flex-start" }}>
-                        <span style={{ fontSize: 10, fontWeight: 800,
-                          color: T.amber, fontFamily: "DM Mono, monospace",
-                          minWidth: 28, paddingTop: 2, flexShrink: 0 }}>{h.id}</span>
+                      <div key={i} style={{ display: "flex", gap: 12, padding: "12px 14px", background: T.bg, borderRadius: 8, border: "1px solid " + T.border, alignItems: "flex-start" }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: T.amber, fontFamily: "DM Mono, monospace", minWidth: 28, paddingTop: 2, flexShrink: 0 }}>{h.id}</span>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, color: T.text,
-                            fontFamily: "DM Sans, sans-serif",
-                            lineHeight: "1.6", marginBottom: 6 }}>{h.text}</div>
+                          <div style={{ fontSize: 12, color: T.text, fontFamily: "DM Sans, sans-serif", lineHeight: "1.6", marginBottom: 6 }}>{h.text}</div>
                           <HBadge status={h.status} T={T} />
                         </div>
                       </div>
@@ -1181,45 +1162,32 @@ export default function Dashboard() {
                   </div>
                 </Card>
               )}
+
               {fw.rules.length === 0 && fw.learnings.length === 0 && (
                 <Card T={T} style={{ padding: 48, textAlign: "center" }}>
-                  <div style={{ color: T.muted, fontSize: 13,
-                    fontFamily: "DM Sans, sans-serif" }}>
-                    Parsing framework data... tap Refresh to reload.
-                  </div>
+                  <div style={{ color: T.muted, fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>Parsing framework data... tap Refresh to reload.</div>
                 </Card>
               )}
             </>
           ) : (
             <Card T={T} style={{ padding: 48, textAlign: "center" }}>
-              {loading ? <Spinner size={24} T={T} /> : (
-                <div style={{ color: T.muted, fontSize: 13,
-                  fontFamily: "DM Sans, sans-serif" }}>
-                  No intelligence data. Tap Refresh.
-                </div>
-              )}
+              {loading ? <Spin size={24} T={T} /> : <div style={{ color: T.muted, fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No intelligence data. Tap Refresh.</div>}
             </Card>
           )}
         </div>
       )}
 
-      {/* ── CHARTS ── */}
+      {/* ─── CHARTS ─── */}
       {tab === "charts" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <Card T={T}>
             <SLabel color={T.accent} T={T}>Daily P&L</SLabel>
             {dailyData.length === 0
-              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.muted,
-                  fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No data yet</div>
+              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.muted, fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No data yet</div>
               : <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={dailyData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
-                    {cg}<XAxis dataKey="date" {...xAP} /><YAxis {...yAP} />
-                    <Tooltip {...ttP} />
-                    <Bar dataKey="pnl" radius={[3,3,0,0]}>
-                      {dailyData.map((e,i) => (
-                        <Cell key={i} fill={e.pnl >= 0 ? T.green : T.red} />
-                      ))}
-                    </Bar>
+                    {cg}<XAxis dataKey="date" {...xAP} /><YAxis {...yAP} /><Tooltip {...ttP} />
+                    <Bar dataKey="pnl" radius={[3,3,0,0]}>{dailyData.map((e,i) => <Cell key={i} fill={e.pnl >= 0 ? T.green : T.red} />)}</Bar>
                   </BarChart>
                 </ResponsiveContainer>
             }
@@ -1227,15 +1195,12 @@ export default function Dashboard() {
           <Card T={T}>
             <SLabel color={T.purple} T={T}>Cumulative P&L</SLabel>
             {cumData.length === 0
-              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.muted,
-                  fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No data yet</div>
+              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.muted, fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No data yet</div>
               : <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={cumData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
                     {cg}<XAxis dataKey="date" {...xAP} /><YAxis {...yAP} />
                     <Tooltip content={<CT />} cursor={{ stroke: T.borderHi, strokeWidth: 1 }} />
-                    <Line type="monotone" dataKey="pnl" stroke={T.purple} strokeWidth={2}
-                      dot={{ fill: T.purple, r: 3, strokeWidth: 0 }}
-                      activeDot={{ r: 5, fill: T.purple, stroke: T.surface, strokeWidth: 2 }} />
+                    <Line type="monotone" dataKey="pnl" stroke={T.purple} strokeWidth={2} dot={{ fill: T.purple, r: 3, strokeWidth: 0 }} activeDot={{ r: 5, fill: T.purple, stroke: T.surface, strokeWidth: 2 }} />
                   </LineChart>
                 </ResponsiveContainer>
             }
@@ -1244,13 +1209,8 @@ export default function Dashboard() {
             <SLabel color={T.amber} T={T}>P&L by Day of Week</SLabel>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={dowData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
-                {cg}<XAxis dataKey="day" {...xAP} /><YAxis {...yAP} />
-                <Tooltip {...ttP} />
-                <Bar dataKey="pnl" radius={[3,3,0,0]}>
-                  {dowData.map((e,i) => (
-                    <Cell key={i} fill={e.pnl > 0 ? T.green : e.pnl < 0 ? T.red : T.dim} />
-                  ))}
-                </Bar>
+                {cg}<XAxis dataKey="day" {...xAP} /><YAxis {...yAP} /><Tooltip {...ttP} />
+                <Bar dataKey="pnl" radius={[3,3,0,0]}>{dowData.map((e,i) => <Cell key={i} fill={e.pnl > 0 ? T.green : e.pnl < 0 ? T.red : T.dim} />)}</Bar>
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -1260,24 +1220,15 @@ export default function Dashboard() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {exitData.map(({ type, count }) => {
                   const pct = Math.round((count / closed.length) * 100);
-                  const color = type === "Target Hit" ? T.green
-                    : type === "Stop Loss" ? T.red : T.amber;
+                  const color = type === "Target Hit" ? T.green : type === "Stop Loss" ? T.red : T.amber;
                   return (
                     <div key={type}>
-                      <div style={{ display: "flex", justifyContent: "space-between",
-                        marginBottom: 4 }}>
-                        <span style={{ fontSize: 12, color: T.text,
-                          fontFamily: "DM Sans, sans-serif" }}>{type}</span>
-                        <span style={{ fontSize: 12, color, fontWeight: 700,
-                          fontFamily: "DM Mono, monospace" }}>
-                          {count} ({pct}%)
-                        </span>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, color: T.text, fontFamily: "DM Sans, sans-serif" }}>{type}</span>
+                        <span style={{ fontSize: 12, color, fontWeight: 700, fontFamily: "DM Mono, monospace" }}>{count} ({pct}%)</span>
                       </div>
-                      <div style={{ height: 6, borderRadius: 3,
-                        background: T.bg, overflow: "hidden" }}>
-                        <div style={{ width: pct + "%", height: "100%",
-                          background: color, borderRadius: 3,
-                          transition: "width 0.8s ease" }} />
+                      <div style={{ height: 6, borderRadius: 3, background: T.bg, overflow: "hidden" }}>
+                        <div style={{ width: pct + "%", height: "100%", background: color, borderRadius: 3, transition: "width 0.8s ease" }} />
                       </div>
                     </div>
                   );
@@ -1288,61 +1239,36 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── STOCKS ── */}
+      {/* ─── STOCKS ─── */}
       {tab === "stocks" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Card T={T}>
             <SLabel color={T.accent} T={T}>P&L by Stock</SLabel>
             {stockData.length === 0
-              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.muted,
-                  fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No data yet</div>
+              ? <div style={{ padding: "32px 0", textAlign: "center", color: T.muted, fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No data yet</div>
               : <ResponsiveContainer width="100%" height={Math.max(200, stockData.length * 36)}>
-                  <BarChart data={stockData} layout="vertical"
-                    margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
+                  <BarChart data={stockData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={T.border} horizontal={false} />
                     <XAxis type="number" {...xAP} />
-                    <YAxis dataKey="stock" type="category" width={80}
-                      tick={{ fontSize: 10, fill: T.text, fontFamily: "DM Mono, monospace" }}
-                      axisLine={false} tickLine={false} />
+                    <YAxis dataKey="stock" type="category" width={80} tick={{ fontSize: 10, fill: T.text, fontFamily: "DM Mono, monospace" }} axisLine={false} tickLine={false} />
                     <Tooltip {...ttP} />
-                    <Bar dataKey="pnl" radius={[0,3,3,0]}>
-                      {stockData.map((e,i) => (
-                        <Cell key={i} fill={e.pnl >= 0 ? T.green : T.red} />
-                      ))}
-                    </Bar>
+                    <Bar dataKey="pnl" radius={[0,3,3,0]}>{stockData.map((e,i) => <Cell key={i} fill={e.pnl >= 0 ? T.green : T.red} />)}</Bar>
                   </BarChart>
                 </ResponsiveContainer>
             }
           </Card>
           {stockData.length > 0 && (
             <Card T={T} style={{ padding: 0, overflow: "hidden" }}>
-              <div style={{ padding: "12px 20px",
-                borderBottom: "1px solid " + T.border, background: T.bg }}>
-                <SLabel T={T}>Stock Details</SLabel>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 60px 80px",
-                padding: "7px 20px", fontSize: 9, letterSpacing: 1.5, color: T.dim,
-                textTransform: "uppercase", fontFamily: "DM Mono, monospace",
-                fontWeight: 700, borderBottom: "1px solid " + T.border,
-                background: T.bg }}>
+              <div style={{ padding: "12px 20px", borderBottom: "1px solid " + T.border, background: T.bg }}><SLabel T={T}>Stock Details</SLabel></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 60px 80px", padding: "7px 20px", fontSize: 9, letterSpacing: 1.5, color: T.dim, textTransform: "uppercase", fontFamily: "DM Mono, monospace", fontWeight: 700, borderBottom: "1px solid " + T.border, background: T.bg }}>
                 <div>Stock</div><div>Trades</div><div>Win %</div><div>P&L</div>
               </div>
               {stockData.map(s => (
-                <div key={s.stock} style={{ display: "grid",
-                  gridTemplateColumns: "1fr 60px 60px 80px",
-                  padding: "11px 20px", borderBottom: "1px solid " + T.border,
-                  alignItems: "center" }}>
-                  <span style={{ fontWeight: 600, fontSize: 13, color: T.text,
-                    fontFamily: "DM Mono, monospace" }}>{s.stock}</span>
-                  <span style={{ fontSize: 12, color: T.muted,
-                    fontFamily: "DM Mono, monospace" }}>{s.count}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700,
-                    color: s.wr >= 55 ? T.green : s.wr >= 40 ? T.amber : T.red,
-                    fontFamily: "DM Mono, monospace" }}>{s.wr}%</span>
-                  <span style={{ fontFamily: "DM Mono, monospace", fontWeight: 700,
-                    fontSize: 13, color: s.pnl >= 0 ? T.green : T.red }}>
-                    {s.pnl >= 0 ? "+" : ""}₹{s.pnl}
-                  </span>
+                <div key={s.stock} style={{ display: "grid", gridTemplateColumns: "1fr 60px 60px 80px", padding: "11px 20px", borderBottom: "1px solid " + T.border, alignItems: "center" }}>
+                  <span style={{ fontWeight: 600, fontSize: 13, color: T.text, fontFamily: "DM Mono, monospace" }}>{s.stock}</span>
+                  <span style={{ fontSize: 12, color: T.muted, fontFamily: "DM Mono, monospace" }}>{s.count}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: s.wr >= 55 ? T.green : s.wr >= 40 ? T.amber : T.red, fontFamily: "DM Mono, monospace" }}>{s.wr}%</span>
+                  <span style={{ fontFamily: "DM Mono, monospace", fontWeight: 700, fontSize: 13, color: s.pnl >= 0 ? T.green : T.red }}>{s.pnl >= 0 ? "+" : ""}₹{s.pnl}</span>
                 </div>
               ))}
             </Card>
@@ -1350,25 +1276,16 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── STRATEGY ── */}
+      {/* ─── STRATEGY ─── */}
       {tab === "strategy" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {Object.keys(stratMap).length > 0 && (
             <Card T={T}>
               <SLabel color={T.purple} T={T}>Strategy P&L Comparison</SLabel>
               <ResponsiveContainer width="100%" height={180}>
-                <BarChart
-                  data={Object.entries(stratMap).map(([name, d]) => ({
-                    name, pnl: Math.round(d.pnl),
-                  }))}
-                  margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
-                  {cg}<XAxis dataKey="name" {...xAP} /><YAxis {...yAP} />
-                  <Tooltip {...ttP} />
-                  <Bar dataKey="pnl" radius={[3,3,0,0]}>
-                    {Object.entries(stratMap).map(([,d], i) => (
-                      <Cell key={i} fill={d.pnl >= 0 ? T.green : T.red} />
-                    ))}
-                  </Bar>
+                <BarChart data={Object.entries(stratMap).map(([name, d]) => ({ name, pnl: Math.round(d.pnl) }))} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
+                  {cg}<XAxis dataKey="name" {...xAP} /><YAxis {...yAP} /><Tooltip {...ttP} />
+                  <Bar dataKey="pnl" radius={[3,3,0,0]}>{Object.entries(stratMap).map(([,d], i) => <Cell key={i} fill={d.pnl >= 0 ? T.green : T.red} />)}</Bar>
                 </BarChart>
               </ResponsiveContainer>
             </Card>
@@ -1379,133 +1296,80 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height={220}>
                 <RadarChart data={radarData}>
                   <PolarGrid stroke={T.border} />
-                  <PolarAngleAxis dataKey="strategy"
-                    tick={{ fontSize: 10, fill: T.muted, fontFamily: "DM Mono, monospace" }} />
-                  <Radar dataKey="winRate" stroke={T.teal}
-                    fill={T.teal} fillOpacity={0.18} strokeWidth={2} />
+                  <PolarAngleAxis dataKey="strategy" tick={{ fontSize: 10, fill: T.muted, fontFamily: "DM Mono, monospace" }} />
+                  <Radar dataKey="winRate" stroke={T.teal} fill={T.teal} fillOpacity={0.18} strokeWidth={2} />
                 </RadarChart>
               </ResponsiveContainer>
             </Card>
           )}
-          {Object.entries(stratMap)
-            .sort(([,a],[,b]) => b.pnl - a.pnl)
-            .map(([name, data]) => {
-              const wr = Math.round((data.wins / data.total) * 100);
-              return (
-                <Card key={name} T={T} accent={data.pnl >= 0 ? T.green : T.red}>
-                  <div style={{ display: "flex", justifyContent: "space-between",
-                    alignItems: "flex-start", marginBottom: 14 }}>
-                    <div>
-                      <StrategyTag name={name} T={T} />
-                      <div style={{ fontSize: 11, color: T.muted, marginTop: 6,
-                        fontFamily: "DM Mono, monospace" }}>
-                        {data.total} trades · {data.wins}W · {data.total - data.wins}L
-                      </div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: "DM Mono, monospace", fontSize: 20,
-                        fontWeight: 900, color: data.pnl >= 0 ? T.green : T.red }}>
-                        {data.pnl >= 0 ? "+" : ""}₹{data.pnl.toFixed(0)}
-                      </div>
-                      <div style={{ fontSize: 11, color: T.muted, marginTop: 2,
-                        fontFamily: "DM Mono, monospace" }}>
-                        {wr}% win rate
-                      </div>
-                    </div>
+          {Object.entries(stratMap).sort(([,a],[,b]) => b.pnl - a.pnl).map(([name, data]) => {
+            const wr = Math.round((data.wins / data.total) * 100);
+            return (
+              <Card key={name} T={T} accent={data.pnl >= 0 ? T.green : T.red}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                  <div>
+                    <StrategyTag name={name} T={T} />
+                    <div style={{ fontSize: 11, color: T.muted, marginTop: 6, fontFamily: "DM Mono, monospace" }}>{data.total} trades · {data.wins}W · {data.total - data.wins}L</div>
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, overflow: "hidden",
-                    background: T.bg, display: "flex" }}>
-                    <div style={{ width: wr + "%",
-                      background: "linear-gradient(90deg," + T.green + ",#059669)" }} />
-                    <div style={{ flex: 1,
-                      background: "linear-gradient(90deg," + T.red + ",#dc2626)" }} />
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontFamily: "DM Mono, monospace", fontSize: 20, fontWeight: 900, color: data.pnl >= 0 ? T.green : T.red }}>{data.pnl >= 0 ? "+" : ""}₹{data.pnl.toFixed(0)}</div>
+                    <div style={{ fontSize: 11, color: T.muted, marginTop: 2, fontFamily: "DM Mono, monospace" }}>{wr}% win rate</div>
                   </div>
-                </Card>
-              );
-            })
-          }
+                </div>
+                <div style={{ height: 6, borderRadius: 3, overflow: "hidden", background: T.bg, display: "flex" }}>
+                  <div style={{ width: wr + "%", background: "linear-gradient(90deg," + T.green + ",#059669)" }} />
+                  <div style={{ flex: 1, background: "linear-gradient(90deg," + T.red + ",#dc2626)" }} />
+                </div>
+              </Card>
+            );
+          })}
           {Object.keys(stratMap).length === 0 && (
             <Card T={T} style={{ padding: 48, textAlign: "center" }}>
-              <div style={{ color: T.muted, fontSize: 13,
-                fontFamily: "DM Sans, sans-serif" }}>No closed trades yet.</div>
+              <div style={{ color: T.muted, fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No closed trades yet.</div>
             </Card>
           )}
         </div>
       )}
 
-      {/* ── TRADE LOG ── */}
+      {/* ─── TRADE LOG ─── */}
       {tab === "log" && (
         <div>
-          <div style={{ display: "flex", gap: 6, marginBottom: 16,
-            flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ fontSize: 10, color: T.muted, marginRight: 4,
-              letterSpacing: 1.5, textTransform: "uppercase",
-              fontFamily: "DM Sans, sans-serif" }}>Filter</span>
+          <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+            <span style={{ fontSize: 10, color: T.muted, marginRight: 4, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>Filter</span>
             {["ALL","PENDING","APPROVED","EXECUTED","CLOSED","REJECTED"].map(f => (
               <button key={f} onClick={() => setFilter(f)} style={{
                 background: filter === f ? T.accent + "18" : "transparent",
-                border: filter === f
-                  ? "1px solid " + T.accent + "66" : "1px solid " + T.border,
+                border: filter === f ? "1px solid " + T.accent + "66" : "1px solid " + T.border,
                 color: filter === f ? T.accent : T.muted,
-                borderRadius: 6, padding: "4px 11px", fontSize: 11,
-                fontWeight: 700, cursor: "pointer", letterSpacing: 0.5,
-                fontFamily: "DM Mono, monospace",
+                borderRadius: 6, padding: "4px 11px", fontSize: 11, fontWeight: 700,
+                cursor: "pointer", letterSpacing: 0.5, fontFamily: "DM Mono, monospace",
                 transition: "all 0.15s", outline: "none" }}>{f}</button>
             ))}
             {synced && !mobile && (
-              <span style={{ marginLeft: "auto", fontSize: 9, color: T.dim,
-                fontFamily: "DM Mono, monospace" }}>
-                Synced {synced.toLocaleTimeString("en-IN",
-                  { timeZone: "Asia/Kolkata" })} IST
+              <span style={{ marginLeft: "auto", fontSize: 9, color: T.dim, fontFamily: "DM Mono, monospace" }}>
+                Synced {synced.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })} IST
               </span>
             )}
           </div>
           <Card T={T} style={{ padding: 0, overflow: "hidden" }}>
             {!mobile && (
-              <div style={{ display: "grid",
-                gridTemplateColumns: "2fr 100px 90px 90px 90px 60px 90px 1fr",
-                padding: "8px 20px", gap: 8,
-                fontSize: 9, letterSpacing: 1.5, color: T.dim,
-                textTransform: "uppercase", fontFamily: "DM Mono, monospace",
-                fontWeight: 700, borderBottom: "1px solid " + T.border,
-                background: T.bg }}>
-                <div>Trade</div><div>Status</div><div>Entry</div>
-                <div>SL</div><div>Target</div><div>Qty</div>
-                <div>P&L</div><div>Actions</div>
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 100px 90px 90px 90px 60px 90px 1fr",
+                padding: "8px 20px", gap: 8, fontSize: 9, letterSpacing: 1.5, color: T.dim,
+                textTransform: "uppercase", fontFamily: "DM Mono, monospace", fontWeight: 700,
+                borderBottom: "1px solid " + T.border, background: T.bg }}>
+                <div>Trade</div><div>Status</div><div>Entry</div><div>SL</div><div>Target</div><div>Qty</div><div>P&L</div><div>Actions</div>
               </div>
             )}
             {loading
-              ? <div style={{ padding: 48, textAlign: "center" }}>
-                  <Spinner size={24} T={T} />
-                  <div style={{ color: T.muted, marginTop: 14, fontSize: 12,
-                    fontFamily: "DM Sans, sans-serif" }}>Fetching from Notion...</div>
-                </div>
+              ? <div style={{ padding: 48, textAlign: "center" }}><Spin size={24} T={T} /><div style={{ color: T.muted, marginTop: 14, fontSize: 12, fontFamily: "DM Sans, sans-serif" }}>Fetching from Notion...</div></div>
               : filtered.length === 0
-                ? <div style={{ padding: 48, textAlign: "center" }}>
-                    <div style={{ fontSize: 28, marginBottom: 12 }}>📭</div>
-                    <div style={{ color: T.muted, fontSize: 13,
-                      fontFamily: "DM Sans, sans-serif" }}>
-                      No trades{filter !== "ALL" ? " matching " + filter : ""}.
-                    </div>
-                  </div>
-                : filtered.map(t => (
-                    <TradeRow key={t.id} trade={t} updating={updating}
-                      onAction={updateStatus} mobile={mobile} T={T} />
-                  ))
+                ? <div style={{ padding: 48, textAlign: "center" }}><div style={{ fontSize: 28, marginBottom: 12 }}>📭</div><div style={{ color: T.muted, fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No trades{filter !== "ALL" ? " matching " + filter : ""}.</div></div>
+                : filtered.map(t => <TradeRow key={t.id} trade={t} updating={updating} onAction={updateStatus} mobile={mobile} T={T} />)
             }
             {filtered.length > 0 && closed.length > 0 && (
-              <div style={{ padding: "11px 20px", background: T.bg,
-                borderTop: "1px solid " + T.border,
-                display: "flex", justifyContent: "space-between",
-                alignItems: "center" }}>
-                <span style={{ fontSize: 10, color: T.muted,
-                  fontFamily: "DM Mono, monospace", letterSpacing: 1 }}>
-                  TOTAL · {closed.length} CLOSED
-                </span>
-                <span style={{ fontFamily: "DM Mono, monospace", fontSize: 15,
-                  fontWeight: 900, color: totalPnL >= 0 ? T.green : T.red }}>
-                  {fmt(totalPnL)}
-                </span>
+              <div style={{ padding: "11px 20px", background: T.bg, borderTop: "1px solid " + T.border, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 10, color: T.muted, fontFamily: "DM Mono, monospace", letterSpacing: 1 }}>TOTAL · {closed.length} CLOSED</span>
+                <span style={{ fontFamily: "DM Mono, monospace", fontSize: 15, fontWeight: 900, color: totalPnL >= 0 ? T.green : T.red }}>{fmt(totalPnL)}</span>
               </div>
             )}
           </Card>
@@ -1514,10 +1378,9 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── ROOT ── */
+  /* ─── ROOT ─── */
   return (
-    <div style={{ background: T.bg, minHeight: "100vh", color: T.text,
-      transition: "background 0.25s, color 0.25s" }}>
+    <div style={{ background: T.bg, minHeight: "100vh", color: T.text, transition: "background 0.25s, color 0.25s" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
         @keyframes spin    { to { transform: rotate(360deg) } }
@@ -1525,7 +1388,7 @@ export default function Dashboard() {
         @keyframes slideUp { from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }
         * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
         button:focus, button:focus-visible { outline: none !important; box-shadow: none !important; }
-        .recharts-wrapper  { background: transparent !important; }
+        .recharts-wrapper { background: transparent !important; }
         .recharts-surface  { background: transparent !important; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -1559,16 +1422,14 @@ export default function Dashboard() {
       )}
 
       {mobile ? (
-        <div style={{ display: "flex", flexDirection: "column",
-          minHeight: "100vh", marginTop: urgent ? 38 : 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", marginTop: urgent ? 38 : 0 }}>
           <MobileHeader />
           <div style={{ flex: 1, overflowY: "auto" }}>
             <Content />
           </div>
         </div>
       ) : (
-        <div style={{ display: "flex", height: "100vh", overflow: "hidden",
-          marginTop: urgent ? 38 : 0 }}>
+        <div style={{ display: "flex", height: "100vh", overflow: "hidden", marginTop: urgent ? 38 : 0 }}>
           <Sidebar />
           <main style={{ flex: 1, overflowY: "auto" }}>
             <Content />
