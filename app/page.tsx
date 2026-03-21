@@ -7,6 +7,15 @@ import {
 } from "recharts";
 
 /* ─────────────────────────────────────────
+   TIME-BASED DEFAULT THEME
+───────────────────────────────────────── */
+function getDefaultTheme(): "dark" | "warm" | "green" {
+  const ist = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  const h = ist.getHours();
+  return (h >= 6 && h < 19) ? "warm" : "dark";
+}
+
+/* ─────────────────────────────────────────
    THREE THEMES
 ───────────────────────────────────────── */
 const THEMES = {
@@ -57,15 +66,16 @@ const THEMES = {
     card:     "#ffffff",
     border:   "#bbf7d0",
     borderHi: "#86efac",
-    text:     "#14532d",
-    muted:    "#4d7c5f",
-    dim:      "#a7f3d0",
-    accent:   "#0284c7",
-    green:    "#16a34a",
-    red:      "#dc2626",
-    amber:    "#ca8a04",
-    purple:   "#7c3aed",
-    teal:     "#0891b2",
+    // FIX: near-black text for readability — green only for backgrounds/accents
+    text:     "#1a2e1a",
+    muted:    "#3d6b52",
+    dim:      "#a3c9b0",
+    accent:   "#0369a1",
+    green:    "#15803d",
+    red:      "#b91c1c",
+    amber:    "#a16207",
+    purple:   "#6d28d9",
+    teal:     "#0e7490",
     greenBg:  "#dcfce7",
     redBg:    "#fee2e2",
     amberBg:  "#fef9c3",
@@ -73,18 +83,18 @@ const THEMES = {
 };
 
 type ThemeKey = keyof typeof THEMES;
-type Theme = typeof THEMES.dark;
+type Theme    = typeof THEMES.dark;
 
 /* ─────────────────────────────────────────
    STRATEGY + KPI INFO
 ───────────────────────────────────────── */
 const STRATEGY_INFO: Record<string, { icon: string; short: string; when: string }> = {
-  "ORB":         { icon: "📐", short: "Opening Range Breakout",   when: "Best when VIX < 18, trending market. Entry after 9:30 AM candle." },
-  "Mean Rev":    { icon: "↩️", short: "Mean Reversion Bounce",    when: "Best when VIX > 20. Stock near 52-week low with DII buying." },
-  "Momentum":    { icon: "🚀", short: "Relative Strength Play",   when: "Stock up while Nifty is flat or negative. Volume above average." },
+  "ORB":         { icon: "📐", short: "Opening Range Breakout",    when: "Best when VIX < 18, trending market. Entry after 9:30 AM candle." },
+  "Mean Rev":    { icon: "↩️", short: "Mean Reversion Bounce",     when: "Best when VIX > 20. Stock near 52-week low with DII buying." },
+  "Momentum":    { icon: "🚀", short: "Relative Strength Play",    when: "Stock up while Nifty is flat or negative. Volume above average." },
   "Dual Signal": { icon: "⭐", short: "Momentum + Mean Rev combo", when: "Highest conviction — 100% win rate across 6 trades so far." },
-  "Crisis":      { icon: "⚡", short: "Crisis Beneficiary",       when: "Geopolitical/oil shock. Scan upstream E&P and domestic fuel stocks." },
-  "Other":       { icon: "◈",  short: "Custom Setup",             when: "Context-specific trade outside standard strategies." },
+  "Crisis":      { icon: "⚡", short: "Crisis Beneficiary",        when: "Geopolitical/oil shock. Scan upstream E&P and domestic fuel stocks." },
+  "Other":       { icon: "◈",  short: "Custom Setup",              when: "Context-specific trade outside standard strategies." },
 };
 
 const KPI_INFO: Record<string, string> = {
@@ -115,11 +125,11 @@ type Framework  = { rules: Rule[]; learnings: Learning[]; hypotheses: Hypothesis
 type Review     = { title: string; date: string; summary: string };
 
 const makeStatusConfig = (T: Theme) => ({
-  "🟡 PENDING":  { color: T.amber,  bg: T.amberBg, label: "PENDING"  },
-  "✅ APPROVED": { color: T.green,  bg: T.greenBg, label: "APPROVED" },
-  "🔵 EXECUTED": { color: T.accent, bg: T.accent + "18", label: "EXECUTED" },
-  "⚫ CLOSED":   { color: T.muted,  bg: T.surface,  label: "CLOSED"   },
-  "❌ REJECTED": { color: T.red,    bg: T.redBg,   label: "REJECTED" },
+  "🟡 PENDING":  { color: T.amber,  bg: T.amberBg,     label: "PENDING"  },
+  "✅ APPROVED": { color: T.green,  bg: T.greenBg,     label: "APPROVED" },
+  "🔵 EXECUTED": { color: T.accent, bg: T.accent+"18", label: "EXECUTED" },
+  "⚫ CLOSED":   { color: T.muted,  bg: T.surface,     label: "CLOSED"   },
+  "❌ REJECTED": { color: T.red,    bg: T.redBg,       label: "REJECTED" },
 });
 
 const ACTIONS: Record<string, { action: string; label: string; key: keyof Theme }[]> = {
@@ -142,7 +152,7 @@ function fmt(n: number | null) {
 }
 
 /* ─────────────────────────────────────────
-   THEME TOGGLE
+   THEME TOGGLE — 3 pills, active highlighted
 ───────────────────────────────────────── */
 function ThemeToggle({ current, onChange, T }: {
   current: ThemeKey; onChange: (k: ThemeKey) => void; T: Theme;
@@ -153,7 +163,7 @@ function ThemeToggle({ current, onChange, T }: {
     { key: "green", icon: "🌿", label: "Green" },
   ];
   return (
-    <div style={{ display: "inline-flex", background: T.surface,
+    <div style={{ display: "inline-flex", background: T.bg,
       border: "1px solid " + T.border, borderRadius: 22, padding: 3, gap: 2 }}>
       {options.map(({ key, icon, label }) => {
         const active = current === key;
@@ -161,15 +171,13 @@ function ThemeToggle({ current, onChange, T }: {
           <button key={key} onClick={() => onChange(key)} style={{
             padding: "4px 10px", borderRadius: 18,
             fontSize: 11, fontWeight: active ? 700 : 400,
-            border: "none",
-            cursor: active ? "default" : "pointer",
+            border: "none", cursor: active ? "default" : "pointer",
             background: active ? T.accent : "transparent",
             color: active ? "#fff" : T.muted,
             display: "flex", alignItems: "center", gap: 4,
             transition: "all 0.2s", outline: "none",
             boxShadow: active ? "0 1px 5px " + T.accent + "55" : "none",
-            whiteSpace: "nowrap",
-          }}>
+            whiteSpace: "nowrap" }}>
             {icon} {label} {active && "✓"}
           </button>
         );
@@ -463,8 +471,7 @@ function TradeRow({ trade: t, updating, onAction, mobile, T }: {
       <div style={{ display: "grid",
         gridTemplateColumns: "2fr 100px 90px 90px 90px 60px 90px 1fr",
         padding: "11px 20px", borderBottom: "1px solid " + T.border,
-        alignItems: "center", gap: 8,
-        background: "transparent",
+        alignItems: "center", gap: 8, background: "transparent",
         transition: "background 0.12s", cursor: t.notes ? "pointer" : "default" }}
         onClick={() => t.notes && setExpanded(!expanded)}
         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = T.surface; }}
@@ -551,20 +558,21 @@ function HBadge({ status, T }: { status: string; T: Theme }) {
    MAIN DASHBOARD
 ═══════════════════════════════════════ */
 export default function Dashboard() {
-  const [themeKey, setThemeKey] = useState<ThemeKey>("dark");
+  const [themeKey, setThemeKey] = useState<ThemeKey>(getDefaultTheme);
   const T = THEMES[themeKey];
 
-  const [trades, setTrades]     = useState<Trade[]>([]);
-  const [fw, setFw]             = useState<Framework | null>(null);
-  const [review, setReview]     = useState<Review | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState<string | null>(null);
-  const [filter, setFilter]     = useState("ALL");
-  const [tab, setTab]           = useState("overview");
-  const [synced, setSynced]     = useState<Date | null>(null);
-  const [updating, setUpdating] = useState<string | null>(null);
-  const [toast, setToast]       = useState<{ msg: string; ok: boolean } | null>(null);
-  const [mobile, setMobile]     = useState(false);
+  const [trades, setTrades]       = useState<Trade[]>([]);
+  const [fw, setFw]               = useState<Framework | null>(null);
+  const [review, setReview]       = useState<Review | null>(null);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [filter, setFilter]       = useState("ALL");
+  const [tab, setTab]             = useState("overview");
+  const [synced, setSynced]       = useState<Date | null>(null);
+  const [updating, setUpdating]   = useState<string | null>(null);
+  const [toast, setToast]         = useState<{ msg: string; ok: boolean } | null>(null);
+  const [mobile, setMobile]       = useState(false);
+
 
   useEffect(() => {
     const check = () => setMobile(window.innerWidth < 768);
@@ -712,7 +720,7 @@ export default function Dashboard() {
   const filtered = filter === "ALL" ? trades
     : trades.filter(t => t.status?.includes(filter));
 
-  const CT = makeTooltip(T);
+  const CT  = makeTooltip(T);
   const cg  = <CartesianGrid strokeDasharray="3 3" stroke={T.border} vertical={false} />;
   const xAP = { tick: { fontSize: 10, fill: T.muted, fontFamily: "DM Mono, monospace" }, axisLine: { stroke: T.border }, tickLine: false as false };
   const yAP = { tick: { fontSize: 10, fill: T.muted, fontFamily: "DM Mono, monospace" }, axisLine: false as false, tickLine: false as false };
@@ -728,13 +736,17 @@ export default function Dashboard() {
     { key: "log",          label: "Trade Log"    },
   ];
 
-  /* ── SIDEBAR ── */
+  function navTo(key: string) {
+    setTab(key);
+  }
+
+  /* ── DESKTOP SIDEBAR ── */
   const Sidebar = () => (
     <div style={{ width: 230, background: T.surface, borderRight: "1px solid " + T.border,
       display: "flex", flexDirection: "column", height: "100vh",
       position: "sticky", top: 0, flexShrink: 0 }}>
 
-      <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid " + T.border }}>
+      <div style={{ padding: "20px 18px 14px", borderBottom: "1px solid " + T.border }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
           <div style={{ width: 30, height: 30, borderRadius: 8,
             background: "linear-gradient(135deg," + T.accent + "33," + T.purple + "22)",
@@ -753,8 +765,8 @@ export default function Dashboard() {
       </div>
 
       <div style={{ padding: "10px 18px", borderBottom: "1px solid " + T.border }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
-          marginBottom: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between",
+          alignItems: "center", marginBottom: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div style={{ width: 7, height: 7, borderRadius: "50%",
               background: mktOpen ? T.green : T.red,
@@ -765,7 +777,8 @@ export default function Dashboard() {
               {mktOpen ? "LIVE" : "CLOSED"}
             </span>
           </div>
-          <span style={{ fontSize: 10, color: T.muted, fontFamily: "DM Mono, monospace" }}>{istStr}</span>
+          <span style={{ fontSize: 10, color: T.muted,
+            fontFamily: "DM Mono, monospace" }}>{istStr}</span>
         </div>
         {mktOpen && (
           <div style={{ fontSize: 10, color: minsTo3 <= 30 ? T.red : T.amber,
@@ -782,7 +795,7 @@ export default function Dashboard() {
           { label: "Win",    value: winRate + "%", color: T.amber },
           { label: "Streak", value: streak > 0 ? streak + streakType : "—",
             color: streakType === "W" ? T.green : streakType === "L" ? T.red : T.muted },
-          { label: "Open",   value: open.length, color: open.length > 0 ? T.accent : T.muted },
+          { label: "Open",   value: open.length,   color: open.length > 0 ? T.accent : T.muted },
         ].map(s => (
           <div key={s.label} style={{ background: T.card, borderRadius: 7,
             padding: "7px 10px", border: "1px solid " + T.border }}>
@@ -796,7 +809,7 @@ export default function Dashboard() {
 
       <nav style={{ flex: 1, padding: "6px 8px", overflowY: "auto" }}>
         {NAV.map(({ key, label }) => (
-          <button key={key} onClick={() => setTab(key)} style={{
+          <button key={key} onClick={() => navTo(key)} style={{
             width: "100%", display: "flex", alignItems: "center", gap: 10,
             padding: "10px 12px", borderRadius: 8, border: "none",
             background: tab === key
@@ -852,57 +865,67 @@ export default function Dashboard() {
     </div>
   );
 
-  /* ── MOBILE BOTTOM BAR ── */
-  const BottomBar = () => (
-    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0,
-      background: T.surface, borderTop: "1px solid " + T.border,
-      display: "flex", zIndex: 20,
-      paddingBottom: "env(safe-area-inset-bottom)" }}>
-      {NAV.slice(0, 5).map(({ key, label }) => (
-        <button key={key} onClick={() => setTab(key)} style={{
-          flex: 1, display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center",
-          padding: "10px 4px 8px", border: "none",
-          background: "transparent",
-          color: tab === key ? T.accent : T.muted,
-          cursor: "pointer",
-          borderTop: tab === key ? "2px solid " + T.accent : "2px solid transparent",
-          transition: "all 0.15s", outline: "none" }}>
-          <span style={{ fontSize: 9, letterSpacing: 0.5,
-            fontFamily: "DM Sans, sans-serif",
-            fontWeight: tab === key ? 700 : 400 }}>
-            {label.toUpperCase()}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-
   /* ── MOBILE HEADER ── */
   const MobileHeader = () => (
     <div style={{ background: T.surface, borderBottom: "1px solid " + T.border,
-      padding: "12px 16px", display: "flex", alignItems: "center",
-      justifyContent: "space-between", position: "sticky", top: 0, zIndex: 10 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 26, height: 26, borderRadius: 7,
-          background: "linear-gradient(135deg," + T.accent + "33," + T.purple + "22)",
-          border: "1px solid " + T.accent + "44",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 11, fontWeight: 900, color: T.accent,
-          fontFamily: "DM Mono, monospace" }}>₹</div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: T.text,
-          fontFamily: "DM Sans, sans-serif" }}>
-          {NAV.find(n => n.key === tab)?.label || "Dashboard"}
+      position: "sticky", top: 0, zIndex: 30 }}>
+      {/* Top bar — logo, clock, theme, refresh */}
+      <div style={{ padding: "11px 16px", display: "flex", alignItems: "center",
+        justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 24, height: 24, borderRadius: 6,
+            background: "linear-gradient(135deg," + T.accent + "33," + T.purple + "22)",
+            border: "1px solid " + T.accent + "44",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 10, fontWeight: 900, color: T.accent,
+            fontFamily: "DM Mono, monospace" }}>₹</div>
+          <span style={{ fontSize: 12, fontWeight: 700, color: T.text,
+            fontFamily: "DM Sans, sans-serif" }}>Trading Desk</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <ThemeToggle current={themeKey} onChange={setThemeKey} T={T} />
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 5, height: 5, borderRadius: "50%",
+              background: mktOpen ? T.green : T.red }} />
+            <span style={{ fontSize: 9, color: mktOpen ? T.green : T.red,
+              fontFamily: "DM Mono, monospace", fontWeight: 700 }}>{istStr}</span>
+          </div>
+          <button onClick={load} disabled={loading} style={{
+            background: "transparent", border: "1px solid " + T.border,
+            borderRadius: 6, color: T.accent, padding: "4px 8px",
+            fontSize: 11, cursor: "pointer", outline: "none" }}>
+            {loading ? <Spinner T={T} /> : "↻"}
+          </button>
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <ThemeToggle current={themeKey} onChange={setThemeKey} T={T} />
-        <button onClick={load} disabled={loading} style={{
-          background: "transparent", border: "1px solid " + T.border,
-          borderRadius: 7, color: T.accent, padding: "5px 10px",
-          fontSize: 12, cursor: "pointer", outline: "none" }}>
-          {loading ? <Spinner T={T} /> : "↻"}
-        </button>
+      {/* Tab bar */}
+      <div style={{ display: "flex", borderTop: "1px solid " + T.border,
+        overflowX: "auto", scrollbarWidth: "none" }}>
+        {NAV.map(({ key, label }) => (
+          <button key={key} onClick={() => navTo(key)} style={{
+            flex: "0 0 auto", padding: "9px 14px", border: "none",
+            background: "transparent",
+            color: tab === key ? T.accent : T.muted,
+            cursor: "pointer",
+            borderBottom: tab === key
+              ? "2px solid " + T.accent : "2px solid transparent",
+            transition: "all 0.15s", outline: "none",
+            fontFamily: "DM Sans, sans-serif",
+            fontSize: 12, fontWeight: tab === key ? 700 : 400,
+            whiteSpace: "nowrap", position: "relative" }}>
+            {label}
+            {key === "today" && todayOpen.length > 0 && (
+              <span style={{ position: "absolute", top: 4, right: 4,
+                background: T.amber,
+                color: themeKey === "dark" ? "#000" : "#fff",
+                borderRadius: "50%", fontSize: 7, fontWeight: 800,
+                width: 13, height: 13, display: "flex",
+                alignItems: "center", justifyContent: "center" }}>
+                {todayOpen.length}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -910,7 +933,7 @@ export default function Dashboard() {
   /* ── CONTENT ── */
   const Content = () => (
     <div style={{ flex: 1, overflowY: "auto",
-      padding: mobile ? "16px 16px 80px" : "28px 32px" }}>
+      padding: mobile ? "16px" : "28px 32px" }}>
       {error && (
         <div style={{ background: T.redBg, border: "1px solid " + T.red,
           borderRadius: 10, padding: "11px 16px", marginBottom: 20,
@@ -927,15 +950,15 @@ export default function Dashboard() {
             <KPI T={T} label="Total P&L" value={fmt(totalPnL)}
               sub={closed.length + " closed"}
               color={totalPnL >= 0 ? T.green : T.red}
-              onClick={() => setTab("charts")} />
+              onClick={() => navTo("charts")} />
             <KPI T={T} label="Win Rate" value={winRate + "%"}
               sub={wins.length + "W · " + losses.length + "L"}
               color={winRate >= 55 ? T.green : winRate >= 40 ? T.amber : T.red}
-              onClick={() => setTab("strategy")} />
+              onClick={() => navTo("strategy")} />
             <KPI T={T} label="Profit Factor" value={pf}
               sub={"Avg W ₹" + avgWin.toFixed(0)}
               color={T.purple}
-              onClick={() => setTab("strategy")} />
+              onClick={() => navTo("strategy")} />
             <KPI T={T} label="Streak"
               value={streak > 0 ? streak + " " + (streakType === "W" ? "Wins" : "Losses") : "—"}
               sub={streak > 0 ? "Current " + (streakType === "W" ? "win" : "loss") + " run" : "No data"}
@@ -943,7 +966,7 @@ export default function Dashboard() {
             <KPI T={T} label="Open Now" value={open.length}
               sub="Need action"
               color={open.length > 0 ? T.accent : T.muted}
-              onClick={() => setTab("today")} />
+              onClick={() => navTo("today")} />
           </div>
 
           <div style={{ display: "grid",
@@ -958,7 +981,8 @@ export default function Dashboard() {
                 <div style={{ flex: 1,
                   background: "linear-gradient(90deg," + T.red + ",#dc2626)" }} />
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between",
+                marginBottom: 16 }}>
                 <span style={{ color: T.green, fontWeight: 700, fontSize: 13,
                   fontFamily: "DM Mono, monospace" }}>
                   {wins.length} wins ({winRate}%)
@@ -978,7 +1002,8 @@ export default function Dashboard() {
                   <div key={l as string} style={{ background: T.bg, borderRadius: 8,
                     padding: "8px 12px", border: "1px solid " + T.border }}>
                     <div style={{ fontSize: 9, color: T.dim, letterSpacing: 1.5,
-                      textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{l}</div>
+                      textTransform: "uppercase",
+                      fontFamily: "DM Sans, sans-serif" }}>{l}</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: c as string,
                       fontFamily: "DM Mono, monospace", marginTop: 3 }}>{v}</div>
                   </div>
@@ -1063,7 +1088,9 @@ export default function Dashboard() {
             ? <Card T={T} style={{ padding: 48, textAlign: "center" }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
                 <div style={{ color: T.muted, fontSize: 13,
-                  fontFamily: "DM Sans, sans-serif" }}>No trades logged today yet.</div>
+                  fontFamily: "DM Sans, sans-serif" }}>
+                  No trades logged today yet.
+                </div>
               </Card>
             : <Card T={T} style={{ padding: 0, overflow: "hidden" }}>
                 <div style={{ padding: "12px 20px",
@@ -1167,7 +1194,9 @@ export default function Dashboard() {
             <Card T={T} style={{ padding: 48, textAlign: "center" }}>
               {loading ? <Spinner size={24} T={T} /> : (
                 <div style={{ color: T.muted, fontSize: 13,
-                  fontFamily: "DM Sans, sans-serif" }}>No intelligence data. Tap Refresh.</div>
+                  fontFamily: "DM Sans, sans-serif" }}>
+                  No intelligence data. Tap Refresh.
+                </div>
               )}
             </Card>
           )}
@@ -1184,9 +1213,7 @@ export default function Dashboard() {
                   fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No data yet</div>
               : <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={dailyData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
-                    {cg}
-                    <XAxis dataKey="date" {...xAP} />
-                    <YAxis {...yAP} />
+                    {cg}<XAxis dataKey="date" {...xAP} /><YAxis {...yAP} />
                     <Tooltip {...ttP} />
                     <Bar dataKey="pnl" radius={[3,3,0,0]}>
                       {dailyData.map((e,i) => (
@@ -1204,9 +1231,7 @@ export default function Dashboard() {
                   fontSize: 13, fontFamily: "DM Sans, sans-serif" }}>No data yet</div>
               : <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={cumData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
-                    {cg}
-                    <XAxis dataKey="date" {...xAP} />
-                    <YAxis {...yAP} />
+                    {cg}<XAxis dataKey="date" {...xAP} /><YAxis {...yAP} />
                     <Tooltip content={<CT />} cursor={{ stroke: T.borderHi, strokeWidth: 1 }} />
                     <Line type="monotone" dataKey="pnl" stroke={T.purple} strokeWidth={2}
                       dot={{ fill: T.purple, r: 3, strokeWidth: 0 }}
@@ -1219,9 +1244,7 @@ export default function Dashboard() {
             <SLabel color={T.amber} T={T}>P&L by Day of Week</SLabel>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={dowData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
-                {cg}
-                <XAxis dataKey="day" {...xAP} />
-                <YAxis {...yAP} />
+                {cg}<XAxis dataKey="day" {...xAP} /><YAxis {...yAP} />
                 <Tooltip {...ttP} />
                 <Bar dataKey="pnl" radius={[3,3,0,0]}>
                   {dowData.map((e,i) => (
@@ -1339,9 +1362,7 @@ export default function Dashboard() {
                     name, pnl: Math.round(d.pnl),
                   }))}
                   margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
-                  {cg}
-                  <XAxis dataKey="name" {...xAP} />
-                  <YAxis {...yAP} />
+                  {cg}<XAxis dataKey="name" {...xAP} /><YAxis {...yAP} />
                   <Tooltip {...ttP} />
                   <Bar dataKey="pnl" radius={[3,3,0,0]}>
                     {Object.entries(stratMap).map(([,d], i) => (
@@ -1423,7 +1444,8 @@ export default function Dashboard() {
             {["ALL","PENDING","APPROVED","EXECUTED","CLOSED","REJECTED"].map(f => (
               <button key={f} onClick={() => setFilter(f)} style={{
                 background: filter === f ? T.accent + "18" : "transparent",
-                border: filter === f ? "1px solid " + T.accent + "66" : "1px solid " + T.border,
+                border: filter === f
+                  ? "1px solid " + T.accent + "66" : "1px solid " + T.border,
                 color: filter === f ? T.accent : T.muted,
                 borderRadius: 6, padding: "4px 11px", fontSize: 11,
                 fontWeight: 700, cursor: "pointer", letterSpacing: 0.5,
@@ -1433,7 +1455,8 @@ export default function Dashboard() {
             {synced && !mobile && (
               <span style={{ marginLeft: "auto", fontSize: 9, color: T.dim,
                 fontFamily: "DM Mono, monospace" }}>
-                Synced {synced.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })} IST
+                Synced {synced.toLocaleTimeString("en-IN",
+                  { timeZone: "Asia/Kolkata" })} IST
               </span>
             )}
           </div>
@@ -1522,7 +1545,7 @@ export default function Dashboard() {
       )}
 
       {toast && (
-        <div style={{ position: "fixed", bottom: mobile ? 80 : 24, right: 20, zIndex: 99,
+        <div style={{ position: "fixed", bottom: 24, right: 20, zIndex: 99,
           background: toast.ok ? T.greenBg : T.redBg,
           border: "1px solid " + (toast.ok ? T.green : T.red),
           borderRadius: 10, padding: "11px 18px",
@@ -1536,11 +1559,13 @@ export default function Dashboard() {
       )}
 
       {mobile ? (
-        <>
+        <div style={{ display: "flex", flexDirection: "column",
+          minHeight: "100vh", marginTop: urgent ? 38 : 0 }}>
           <MobileHeader />
-          <Content />
-          <BottomBar />
-        </>
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            <Content />
+          </div>
+        </div>
       ) : (
         <div style={{ display: "flex", height: "100vh", overflow: "hidden",
           marginTop: urgent ? 38 : 0 }}>
