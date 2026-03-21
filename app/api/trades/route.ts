@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-const TOKEN = process.env.NOTION_TOKEN!;
-const DB_ID = process.env.NOTION_DB_ID!;
-const FRAMEWORK_PAGE_ID = "32547d7feabb8143b5f6c5a2599f1f28";
-const INDIA_DESK_ID = "32847d7feabb814aa091e66134618f70";
+const TOKEN   = process.env.NOTION_TOKEN!;
+const DB_ID   = process.env.NOTION_DB_ID!;
+const FW_ID   = "32547d7feabb8143b5f6c5a2599f1f28";
+const DESK_ID = "32847d7feabb814aa091e66134618f70";
 
-async function notionFetch(url: string, options: RequestInit = {}) {
+async function nfetch(url: string, options: RequestInit = {}) {
   return fetch(url, {
     ...options,
     headers: {
@@ -17,170 +17,179 @@ async function notionFetch(url: string, options: RequestInit = {}) {
   });
 }
 
-// Extract plain text from Notion rich text array
-function richText(arr: any[]): string {
-  return arr?.map((t: any) => t.plain_text).join("") ?? "";
+function rt(arr: any[]): string {
+  if (!Array.isArray(arr)) return "";
+  return arr.map((t: any) => t.plain_text ?? "").join("");
 }
 
-// Parse framework page blocks into structured data
-function parseFrameworkBlocks(blocks: any[]) {
+async function getAllBlocks(pageId: string): Promise<any[]> {
+  const blocks: any[] = [];
+  let cursor: string | undefined;
+  do {
+    const url = `https://api.notion.com/v1/blocks/${pageId}/children?page_size=100`
+      + (cursor ? `&start_cursor=${cursor}` : "");
+    const res = await nfetch(url);
+    if (!res.ok) break;
+    const data = await res.json();
+    blocks.push(...(data.results ?? []));
+    cursor = data.has_more ? data.next_cursor : undefined;
+  } while (cursor);
+  return blocks;
+}
+
+function parseFramework(blocks: any[]) {
   const rules: { id: string; text: string; status: string }[] = [];
   const learnings: { id: string; text: string }[] = [];
   const hypotheses: { id: string; text: string; status: string }[] = [];
-  let currentSection = "";
-  let cumPnL = 0;
+  let section = "";
+  let inRulesTable = false;
+  let inHypoTable  = false;
   let dayCount = 0;
 
-  for (const block of blocks) {
-    const text = block[block.type]?.rich_text
-      ? richText(block[block.type].rich_text)
-      : block[block.type]?.text
-        ? richText(block[block.type].text)
-        : "";
+  for (const b of blocks) {
+    const type = b.type as string;
+    const text = b[type]?.rich_text
+      ? rt(b[type].rich_text)
+      : b[type]?.text
+        ? rt(b[type].text)
+        : b[type]?.title
+          ? rt(b[type].title)
+          : "";
 
-    if (!text) continue;
+    // Section detection
+    if (type === "heading_1" || type === "heading_2") {
+      const t = text.toLowerCase();
+      if (t.includes("adaptive learning") || t.includes("learning")) section = "learnings";
+      if (t.includes("active rules") || t.includes("rules — version") || t.includes("rules for")) {
+        section = "rules"; inRulesTable = true;
+      }
+      if (t.includes("hypothesis")) { section = "hypo"; inHypoTable = true; }
+    }
 
-    // Detect sections
-    if (text.includes("ADAPTIVE LEARNINGS")) currentSection = "learnings";
-    if (text.includes("Active Rules")) currentSection = "rules";
-    if (text.includes("Hypothesis Tracker")) currentSection = "hypotheses";
+    if (type === "heading_3") {
+      const t = text.toLowerCase();
+      // Day headers e.g. "Day 1 — March 16"
+      if (t.match(/day \d+/)) {
+        dayCount++;
+        section = "learnings";
+        inRulesTable = false;
+        inHypoTable  = false;
+      }
+      if (t.includes("active rules")) { section = "rules"; inRulesTable = true; }
+      if (t.includes("hypothesis"))   { section = "hypo";  inHypoTable  = true; }
 
-    // Parse rules from table rows
-    if (currentSection === "rules" && block.type === "table_row") {
-      const cells = block.table_row?.cells ?? [];
-      if (cells.length >= 3) {
-        const id = richText(cells[0]);
-        const rule = richText(cells[1]);
-        const status = richText(cells[3] || cells[2]);
-        if (id.match(/^R\d+/) && rule.length > 5) {
-          rules.push({ id, text: rule, status });
-        }
+      // Parse learnings from h3: "L1 — Some text"
+      if (section === "learnings") {
+        const m = text.match(/^(L\d+)\s*[—–\-]\s*(.+)/);
+        if (m) learnings.push({ id: m[1], text: m[2].replace(/\*\*/g, "").trim() });
       }
     }
 
-    // Parse learnings
-    if (currentSection === "learnings" && block.type === "heading_3") {
-      const match = text.match(/^(L\d+)\s*[—–-]\s*(.+)/);
-      if (match) {
-        learnings.push({ id: match[1], text: match[2] });
+    // Bold paragraphs can also be learnings: **L12 — ...**
+    if (type === "paragraph" && section === "learnings") {
+      const m = text.match(/^(L\d+)\s*[—–\-]\s*(.+)/);
+      if (m) {
+        const exists = learnings.some(l => l.id === m[1]);
+        if (!exists) learnings.push({ id: m[1], text: m[2].replace(/\*\*/g, "").trim() });
       }
     }
 
-    // Parse hypotheses from table rows
-    if (currentSection === "hypotheses" && block.type === "table_row") {
-      const cells = block.table_row?.cells ?? [];
-      if (cells.length >= 4) {
-        const id = richText(cells[0]);
-        const hyp = richText(cells[1]);
-        const status = richText(cells[3]);
-        if (id.match(/^H\d+/) && hyp.length > 5) {
-          hypotheses.push({ id, text: hyp, status });
-        }
+    // Table rows
+    if (type === "table_row") {
+      const cells = b.table_row?.cells ?? [];
+      if (cells.length === 0) continue;
+      const c0 = rt(cells[0] ?? []).trim();
+      const c1 = rt(cells[1] ?? []).trim();
+
+      // Rules table: R1 | rule text | source | status
+      if ((inRulesTable || section === "rules") && c0.match(/^R\d+/) && c1.length > 3) {
+        const status = cells.length > 3 ? rt(cells[3] ?? []) : "";
+        const exists = rules.some(r => r.id === c0);
+        if (!exists) rules.push({ id: c0, text: c1.replace(/\*\*/g, ""), status });
+      }
+
+      // Hypothesis table: H1 | text | days | status
+      if ((inHypoTable || section === "hypo") && c0.match(/^H\d+/) && c1.length > 3) {
+        const status = cells.length > 3 ? rt(cells[3] ?? []) : "";
+        const exists = hypotheses.some(h => h.id === c0);
+        if (!exists) hypotheses.push({ id: c0, text: c1.replace(/\*\*/g, ""), status });
       }
     }
-
-    // Parse cumulative P&L from summary table
-    if (text.includes("Cumulative P&L") && text.includes("₹")) {
-      const match = text.match(/\+?₹([\d,]+)/g);
-      if (match) {
-        const last = match[match.length - 1].replace(/[₹,+]/g, "");
-        cumPnL = parseFloat(last) || 0;
-      }
-    }
-
-    // Count trading days
-    if (text.match(/Day \d+ — March/)) dayCount++;
   }
 
-  return { rules, learnings: learnings.slice(-10), hypotheses, cumPnL, dayCount };
+  return {
+    rules:       rules.filter(r => !r.status.toLowerCase().includes("terminat")),
+    learnings:   learnings.slice(-12),
+    hypotheses,
+    dayCount:    dayCount || 5,
+  };
 }
 
 export async function GET() {
   try {
-    // 1. Fetch trades
-    const tradesRes = await notionFetch(
-      `https://api.notion.com/v1/databases/${DB_ID}/query`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          sorts: [{ timestamp: "created_time", direction: "descending" }],
-          page_size: 50,
-        }),
-      }
-    );
-
-    if (!tradesRes.ok) {
-      const err = await tradesRes.json();
-      return NextResponse.json({ error: "Trades fetch failed", details: err }, { status: 500 });
+    // ── Trades ──
+    const tRes = await nfetch(`https://api.notion.com/v1/databases/${DB_ID}/query`, {
+      method: "POST",
+      body: JSON.stringify({
+        sorts: [{ timestamp: "created_time", direction: "descending" }],
+        page_size: 50,
+      }),
+    });
+    if (!tRes.ok) {
+      const e = await tRes.json();
+      return NextResponse.json({ error: "Trades fetch failed", details: e }, { status: 500 });
     }
-
-    const tradesData = await tradesRes.json();
-    const trades = tradesData.results.map((page: any) => {
-      const p = page.properties;
+    const tData = await tRes.json();
+    const trades = tData.results.map((p: any) => {
+      const pr = p.properties;
       return {
-        id: page.id,
-        createdTime: page.created_time,
-        tradeName: richText(p["Trade Name"]?.title ?? []) || "—",
-        stock: richText(p["Stock"]?.rich_text ?? []) || "—",
-        status: p["Status"]?.select?.name ?? "—",
-        entryPrice: p["Entry Price"]?.number ?? null,
-        stopLoss: p["Stop Loss"]?.number ?? null,
-        target: p["Target"]?.number ?? null,
-        finalPnL: p["Final P&L"]?.number ?? null,
-        quantity: p["Quantity"]?.number ?? null,
-        date: p["Date"]?.date?.start ?? null,
-        mode: p["Mode"]?.select?.name ?? "—",
+        id:         p.id,
+        createdTime: p.created_time,
+        tradeName:  rt(pr["Trade Name"]?.title ?? []) || "—",
+        stock:      rt(pr["Stock"]?.rich_text ?? []) || "—",
+        status:     pr["Status"]?.select?.name ?? "—",
+        entryPrice: pr["Entry Price"]?.number ?? null,
+        stopLoss:   pr["Stop Loss"]?.number ?? null,
+        target:     pr["Target"]?.number ?? null,
+        finalPnL:   pr["Final P&L"]?.number ?? null,
+        quantity:   pr["Quantity"]?.number ?? null,
+        date:       pr["Date"]?.date?.start ?? null,
+        mode:       pr["Mode"]?.select?.name ?? "—",
+        notes:      rt(pr["Notes"]?.rich_text ?? []) || "",
+        reason:     rt(pr["Reason"]?.rich_text ?? []) || "",
       };
     });
 
-    // 2. Fetch framework page blocks
-    let framework = { rules: [], learnings: [], hypotheses: [], cumPnL: 0, dayCount: 0 };
+    // ── Framework ──
+    let framework = { rules: [], learnings: [], hypotheses: [], dayCount: 5 };
     try {
-      const fwRes = await notionFetch(
-        `https://api.notion.com/v1/blocks/${FRAMEWORK_PAGE_ID}/children?page_size=200`
-      );
-      if (fwRes.ok) {
-        const fwData = await fwRes.json();
-        framework = parseFrameworkBlocks(fwData.results ?? []);
-      }
-    } catch { /* framework optional */ }
+      const blocks = await getAllBlocks(FW_ID);
+      framework = parseFramework(blocks) as any;
+    } catch { /* optional */ }
 
-    // 3. Fetch latest daily review
+    // ── Latest daily review ──
     let latestReview = { title: "", date: "", summary: "" };
     try {
-      const deskRes = await notionFetch(
-        `https://api.notion.com/v1/blocks/${INDIA_DESK_ID}/children?page_size=20`
-      );
-      if (deskRes.ok) {
-        const deskData = await deskRes.json();
-        const reviewPages = deskData.results
-          .filter((b: any) => b.type === "child_page" &&
-            b.child_page?.title?.includes("Daily Review"))
-          .sort((a: any, b: any) =>
-            b.created_time.localeCompare(a.created_time));
+      const deskBlocks = await getAllBlocks(DESK_ID);
+      const reviews = deskBlocks
+        .filter((b: any) => b.type === "child_page" &&
+          b.child_page?.title?.includes("Daily Review"))
+        .sort((a: any, z: any) => z.created_time.localeCompare(a.created_time));
 
-        if (reviewPages.length > 0) {
-          const latest = reviewPages[0];
-          latestReview.title = latest.child_page?.title ?? "";
-          latestReview.date = latest.created_time?.split("T")[0] ?? "";
-
-          // Fetch first few blocks of the review
-          const reviewRes = await notionFetch(
-            `https://api.notion.com/v1/blocks/${latest.id}/children?page_size=10`
-          );
-          if (reviewRes.ok) {
-            const reviewData = await reviewRes.json();
-            const summaryBlocks = reviewData.results
-              .filter((b: any) => b[b.type]?.rich_text)
-              .slice(0, 3)
-              .map((b: any) => richText(b[b.type].rich_text))
-              .filter(Boolean)
-              .join(" ");
-            latestReview.summary = summaryBlocks.slice(0, 300);
-          }
-        }
+      if (reviews.length > 0) {
+        const latest = reviews[0];
+        latestReview.title = latest.child_page?.title ?? "";
+        latestReview.date  = latest.created_time?.split("T")[0] ?? "";
+        const rBlocks = await getAllBlocks(latest.id);
+        latestReview.summary = rBlocks
+          .filter((b: any) => b[b.type]?.rich_text)
+          .slice(0, 5)
+          .map((b: any) => rt(b[b.type].rich_text))
+          .filter(Boolean)
+          .join(" ")
+          .slice(0, 400);
       }
-    } catch { /* review optional */ }
+    } catch { /* optional */ }
 
     return NextResponse.json({ trades, framework, latestReview });
 
