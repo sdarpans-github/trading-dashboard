@@ -5,7 +5,11 @@ const COOKIE = "dash_auth";
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname === "/login" || pathname.startsWith("/api/login")) {
+  // Always allow: login page, API routes, and static assets
+  if (
+    pathname === "/login" ||
+    pathname.startsWith("/api/")
+  ) {
     return NextResponse.next();
   }
 
@@ -20,5 +24,8 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    // Exclude: static files, images, favicon, AND all /api/* routes
+    "/((?!_next/static|_next/image|favicon.ico|api/).*)",
+  ],
 };
