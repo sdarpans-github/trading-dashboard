@@ -6,6 +6,8 @@ const TOKEN   = process.env.NOTION_TOKEN!;
 const DB_ID   = process.env.NOTION_DB_ID!;
 const FW_ID   = "32547d7feabb8143b5f6c5a2599f1f28";
 const ROOT_ID = "32447d7feabb817b829be6b6ddcc0474";
+// FIX 1: Daily reviews live under India Desk, not ROOT_ID
+const INDIA_DESK_ID = "32847d7feabb814aa091e66134618f70";
 
 async function nfetch(url: string, options: RequestInit = {}) {
   return fetch(url, {
@@ -48,10 +50,8 @@ async function getAllPages<T>(
   return results;
 }
 
-// KEY FIX: Notion tables are TWO levels deep.
-// getAllPages only fetches direct children of a page (the table PARENT block).
-// table_row blocks live inside the table block as its children.
-// Without this fix, type === "table_row" is NEVER seen by the parser → rules: []
+// FIX 2: Notion tables are two-level — table_row blocks are children of table blocks.
+// Without this, type === "table_row" is never seen → rules/hypotheses always empty.
 async function getAllBlocks(pageId: string): Promise<any[]> {
   const blocks = await getAllPages<any>(
     `https://api.notion.com/v1/blocks/${pageId}/children`, "GET"
@@ -105,11 +105,11 @@ function parseFramework(blocks: any[]) {
       if (t.includes("adaptive learning") || t.includes("learnings log") || t.includes("knowledge base")) {
         section = "learnings"; inRulesTable = false; inHypoTable = false;
       }
-      // FIX: Only "active rules" — avoids false matches on "Position Sizing Rules", "Desk Rules"
+      // FIX 3: Only "active rules" — avoids false triggers on "Position Sizing Rules", "Desk Rules"
       if (t.includes("active rules")) {
         section = "rules"; inRulesTable = true; inHypoTable = false;
       }
-      if (t.includes("hypothesis") || t.includes("hypothes")) {
+      if (t.includes("hypothesis tracker") || (t.includes("hypothes") && !t.includes("framework"))) {
         section = "hypo"; inHypoTable = true; inRulesTable = false;
       }
     }
@@ -120,7 +120,7 @@ function parseFramework(blocks: any[]) {
         section = "learnings"; inRulesTable = false; inHypoTable = false;
       }
       if (t.includes("active rules")) { section = "rules"; inRulesTable = true; inHypoTable = false; }
-      if (t.includes("hypothesis") || t.includes("hypothes")) { section = "hypo"; inHypoTable = true; inRulesTable = false; }
+      if (t.includes("hypothes")) { section = "hypo"; inHypoTable = true; inRulesTable = false; }
       if (section === "learnings") {
         const m = text.match(/^(L\d+)\s*[—–\-]\s*(.+)/);
         if (m && !learnings.some(l => l.id === m[1]))
@@ -128,10 +128,12 @@ function parseFramework(blocks: any[]) {
       }
     }
 
+    // FIX 4: L17+ are bold paragraphs — strip ** before regex match
     if (type === "paragraph" && section === "learnings") {
-      const m = text.match(/^(L\d+)\s*[—–\-]\s*(.+)/);
+      const cleaned = text.replace(/\*\*/g, "").trim();
+      const m = cleaned.match(/^(L\d+)\s*[—–\-]\s*(.+)/);
       if (m && !learnings.some(l => l.id === m[1]))
-        learnings.push({ id: m[1], text: m[2].replace(/\*\*/g, "").trim() });
+        learnings.push({ id: m[1], text: m[2].trim() });
     }
 
     if (type === "table_row") {
@@ -201,6 +203,10 @@ export async function GET() {
         quantity:    pr["Quantity"]?.number ?? null,
         date:        pr["Date"]?.date?.start ?? null,
         mode:        pr["Mode"]?.select?.name ?? "—",
+        // New structured fields
+        strategy:    pr["Strategy"]?.select?.name ?? null,
+        regime:      pr["Regime"]?.select?.name ?? null,
+        exitType:    pr["Exit Type"]?.select?.name ?? null,
         notes:       rt(pr["Notes"]?.rich_text ?? []) || "",
         reason:      rt(pr["Reason"]?.rich_text ?? []) || "",
       };
@@ -238,15 +244,18 @@ export async function GET() {
       framework = { ...parsed, dayCount: parsed.dayCount || uniqueTradingDays };
     } catch { /* non-fatal */ }
 
+    // FIX 5: Look for daily reviews under India Desk, not ROOT_ID
     let latestReview = { title: "", date: "", summary: "" };
     try {
-      const rootBlocks = await getAllBlocks(ROOT_ID);
-      const reviews = rootBlocks
+      const indiaBlocks = await getAllBlocks(INDIA_DESK_ID);
+      const reviews = indiaBlocks
         .filter((b: any) =>
           b.type === "child_page" &&
-          (b.child_page?.title?.includes("Daily Review") || b.child_page?.title?.includes("📅"))
+          (b.child_page?.title?.includes("Daily Review") ||
+           b.child_page?.title?.includes("📅"))
         )
         .sort((a: any, z: any) => z.created_time.localeCompare(a.created_time));
+
       if (reviews.length > 0) {
         const latest = reviews[0];
         latestReview.title = latest.child_page?.title ?? "";
@@ -254,7 +263,7 @@ export async function GET() {
         const rBlocks = await getAllBlocks(latest.id);
         latestReview.summary = rBlocks
           .filter((b: any) => b[b.type]?.rich_text)
-          .slice(0, 10)
+          .slice(0, 12)
           .map((b: any) => rt(b[b.type].rich_text))
           .filter(Boolean)
           .join(" ")
